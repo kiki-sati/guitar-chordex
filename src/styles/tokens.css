@@ -1,0 +1,49 @@
+:root {
+  /* ── 색 (원본 colors() + DESIGN-figma.md) ── */
+  --c-ink: #000;
+  --c-muted: #5b5b57;
+  --c-faint: #9a9893;
+  --c-border: #e6e6e6;
+  --c-line: #f1f1f1;
+  --c-panel: #f7f7f5;
+  --c-canvas: #fff;
+  --c-accent: #0052cc;
+  /* accent + '14' (8자리 hex, 알파 0x14 ≈ 8%) */
+  --c-soft: rgba(0, 82, 204, 0.078);
+  /* 격자선 (다이어그램/지판) */
+  --c-grid: #9c9a94;
+  /* 홈 focus 스트릭 카드 */
+  --c-home-streak: #e8f2d2;
+  /* 드릴 카드 배경 */
+  --c-drill-bg: #fcfbf7;
+
+  /* ── 잔디 (GLEVELS) ── */
+  --g0: #ebedf0;
+  --g1: #9be9a8;
+  --g2: #40c463;
+  --g3: #30a14e;
+  --g4: #216e39;
+
+  /* ── 폰트 ── */
+  --f-sans: Inter, "D2Coding", "SF Pro Display", system-ui, helvetica,
+    "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  --f-mono: "JetBrains Mono", "D2Coding", ui-monospace, monospace;
+
+  /* ── 라운딩 ── */
+  --r-xs: 2px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-card: 16px;
+  --r-lg: 24px;
+  --r-pill: 50px;
+  --r-full: 9999px;
+
+  /* ── 간격 ── */
+  --s-xxs: 4px;
+  --s-xs: 8px;
+  --s-sm: 12px;
+  --s-md: 16px;
+  --s-lg: 24px;
+  --s-xl: 28px;
+  --s-xxl: 48px;
+}

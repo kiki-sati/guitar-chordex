@@ -1,0 +1,50 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1000px;
+}
+.statsRow {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.grassPanel {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-card);
+  background: #fff;
+  padding: 18px 20px;
+}
+.grassHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.grassTitle {
+  font-size: 14px;
+  font-weight: 640;
+  white-space: nowrap;
+}
+.logBtn {
+  padding: 7px 13px;
+  font-size: 13px;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--c-accent);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+.records {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.recordsHead {
+  font-size: 13px;
+  font-weight: 640;
+  color: var(--c-muted);
+}

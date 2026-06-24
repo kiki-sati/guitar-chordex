@@ -1,0 +1,115 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 80;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+.modal {
+  background: #fff;
+  border-radius: var(--r-lg);
+  max-width: 720px;
+  width: 100%;
+  padding: 28px 30px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--c-faint);
+  margin-bottom: 6px;
+}
+.title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.close {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--c-border);
+  background: #fff;
+  color: var(--c-ink);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  flex: none;
+}
+.tones {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.tone {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-ink);
+  background: var(--c-panel);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-pill);
+  padding: 4px 11px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 12px;
+}
+.formCard {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-card);
+  background: #fff;
+  padding: 12px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.formLabel {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: var(--c-faint);
+  white-space: nowrap;
+}
+.formActions {
+  display: flex;
+  gap: 7px;
+}
+.circBtn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-full);
+  background: #fff;
+  color: var(--c-muted);
+  cursor: pointer;
+}
+.circBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.empty {
+  padding: 30px;
+  text-align: center;
+  color: var(--c-faint);
+  font-size: 15px;
+}

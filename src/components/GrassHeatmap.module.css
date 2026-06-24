@@ -1,0 +1,22 @@
+.grid {
+  display: flex;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+}
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--c-faint);
+  margin-top: 10px;
+}
+.legendCell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+}

@@ -1,0 +1,24 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.pill {
+  min-width: 40px;
+  padding: 8px 0;
+  font-size: 14px;
+  font-weight: 480;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  background: #fff;
+  color: var(--c-ink);
+  font-family: var(--f-mono);
+  transition: all 0.12s;
+}
+.active {
+  border-color: var(--c-ink);
+  background: var(--c-ink);
+  color: #fff;
+  font-weight: 540;
+}

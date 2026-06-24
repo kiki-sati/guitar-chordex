@@ -1,0 +1,243 @@
+.layoutToggle {
+  margin-bottom: 22px;
+}
+.card {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-card);
+  background: #fff;
+  padding: 18px 20px;
+}
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cardTitle {
+  font-size: 13.5px;
+  font-weight: 640;
+  white-space: nowrap;
+  margin-bottom: 13px;
+}
+.cardMeta {
+  font-size: 12px;
+  color: var(--c-faint);
+}
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 640;
+  margin-bottom: 13px;
+}
+
+/* focus */
+.focusWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 920px;
+}
+.focusTop {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+.streakCard {
+  flex: 1 1 280px;
+  background: var(--c-home-streak);
+  color: #000;
+  border-radius: var(--r-lg);
+  padding: 30px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 172px;
+}
+.streakEyebrow {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.streakNumber {
+  font-size: 56px;
+  font-weight: 340;
+  letter-spacing: -1.4px;
+  line-height: 1;
+  margin-top: 8px;
+}
+.streakUnit {
+  font-size: 22px;
+  font-weight: 330;
+  opacity: 0.6;
+  margin-left: 8px;
+}
+.streakBtn {
+  align-self: flex-start;
+  margin-top: 18px;
+  padding: 10px 22px;
+  font-size: 16px;
+  font-weight: 480;
+  letter-spacing: -0.1px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* suggest */
+.suggestGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 12px;
+}
+.suggestCard {
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  background: #fff;
+  padding: 10px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.suggestName {
+  font-weight: 620;
+  font-size: 14px;
+}
+.listenBtn {
+  font-size: 11px;
+  color: var(--c-muted);
+  background: var(--c-panel);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.listenBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* board */
+.boardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  max-width: 1000px;
+}
+.boardSpan {
+  grid-column: 1 / -1;
+}
+.boardStreak {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.boardStreakNum {
+  font-size: 38px;
+  font-weight: 720;
+  letter-spacing: -0.02em;
+}
+.boardLogBtn {
+  margin-top: 14px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--c-accent);
+  color: #fff;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.collectedChips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.collectedChip {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--c-soft);
+  color: var(--c-ink);
+  border-radius: 7px;
+  padding: 4px 10px;
+}
+.builderBtn {
+  font-size: 12.5px;
+  border: 1px solid var(--c-border);
+  border-radius: 7px;
+  background: #fff;
+  padding: 7px 13px;
+  cursor: pointer;
+  color: var(--c-ink);
+}
+.builderBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* minimal */
+.minimalWrap {
+  max-width: 580px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.minimalStreak {
+  text-align: center;
+}
+.minimalStreakNum {
+  font-size: 40px;
+  font-weight: 720;
+  letter-spacing: -0.02em;
+}
+.minimalLogBtn {
+  margin-top: 12px;
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  border-radius: 9px;
+  background: var(--c-accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+/* recent */
+.recentList {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.recentItem {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.recentDate {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--c-faint);
+  flex: none;
+}
+.recentTitle {
+  font-size: 13.5px;
+  color: var(--c-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recentEmpty {
+  font-size: 13px;
+  color: var(--c-faint);
+}

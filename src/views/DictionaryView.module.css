@@ -1,0 +1,70 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.search {
+  position: relative;
+  margin-left: auto;
+}
+.searchIcon {
+  position: absolute;
+  left: 11px;
+  top: 11px;
+}
+.searchInput {
+  width: 210px;
+  padding: 9px 12px 9px 32px;
+  font-size: 15px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: #fff;
+  outline: none;
+  color: var(--c-ink);
+}
+.roots {
+  margin-bottom: 22px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+  gap: 14px;
+}
+.group {
+  margin-bottom: 28px;
+}
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 13px;
+  flex-wrap: wrap;
+}
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 640;
+}
+.sectionSub {
+  font-size: 12.5px;
+  color: var(--c-faint);
+}
+.groupLabel {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--c-faint);
+}
+.resultMeta {
+  font-size: 13px;
+  color: var(--c-faint);
+  margin-bottom: 12px;
+}
+.empty {
+  color: var(--c-faint);
+  font-size: 14px;
+  padding: 40px 0;
+  text-align: center;
+}

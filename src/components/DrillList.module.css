@@ -1,0 +1,182 @@
+.card {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-card);
+  background: var(--c-drill-bg);
+  padding: 18px 20px 10px;
+}
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.heading {
+  font-size: 15.5px;
+  font-weight: 680;
+  letter-spacing: -0.01em;
+}
+.subHeading {
+  font-size: 12.5px;
+  color: var(--c-faint);
+  margin-top: 3px;
+}
+.clearBtn {
+  padding: 6px 12px;
+  font-size: 12.5px;
+  border: 1px solid var(--c-border);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--c-muted);
+  cursor: pointer;
+  flex: none;
+}
+.row {
+  padding: 14px 2px;
+  border-bottom: 1px solid var(--c-line);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.rowHead {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.rowTitle {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--c-ink);
+  min-width: 0;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.done {
+  color: var(--c-faint);
+  text-decoration: line-through;
+}
+.spacer {
+  flex: 1;
+}
+.counter {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  font-weight: 700;
+  flex: none;
+}
+.stepGroup {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+}
+.stepBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-border);
+  background: #fff;
+  color: var(--c-muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 0;
+}
+.removeBtn {
+  border: none;
+  background: none;
+  color: var(--c-faint);
+  cursor: pointer;
+  font-size: 16px;
+  flex: none;
+  padding: 0 2px;
+  line-height: 1;
+}
+.stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding-left: 17px;
+}
+.stamp {
+  width: 25px;
+  height: 25px;
+  flex: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  border: 1.4px dashed var(--c-border);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s;
+}
+.stampFilled {
+  border: 1px solid var(--c-accent);
+  background: var(--c-accent);
+}
+.empty {
+  padding: 26px 4px;
+  color: var(--c-faint);
+  font-size: 13.5px;
+  text-align: center;
+}
+.addRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 13px 2px 5px;
+  flex-wrap: wrap;
+}
+.addInput {
+  flex: 1 1 200px;
+  padding: 9px 11px;
+  font-size: 13.5px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  outline: none;
+  background: #fff;
+  color: var(--c-ink);
+}
+.targetGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+.targetLabel {
+  font-size: 12.5px;
+  color: var(--c-faint);
+}
+.targetValue {
+  font-family: var(--f-mono);
+  font-size: 14px;
+  font-weight: 700;
+  min-width: 22px;
+  text-align: center;
+}
+.addBtn {
+  padding: 9px 16px;
+  font-size: 13.5px;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--c-ink);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  flex: none;
+}

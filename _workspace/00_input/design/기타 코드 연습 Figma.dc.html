@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'D2Coding';font-weight:400;font-style:normal;font-display:swap;src:url('https://cdn.jsdelivr.net/gh/fonts-archive/D2Coding/D2Coding-Regular.woff2') format('woff2'),url('https://cdn.jsdelivr.net/gh/fonts-archive/D2Coding/D2Coding-Regular.woff') format('woff');}
+@font-face{font-family:'D2Coding';font-weight:700;font-style:normal;font-display:swap;src:url('https://cdn.jsdelivr.net/gh/fonts-archive/D2Coding/D2Coding-Bold.woff2') format('woff2'),url('https://cdn.jsdelivr.net/gh/fonts-archive/D2Coding/D2Coding-Bold.woff') format('woff');}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;}
+body{font-family:Inter,"D2Coding","SF Pro Display",system-ui,helvetica,"Apple Color Emoji","Segoe UI Emoji",sans-serif;color:#000;background:#fff;-webkit-font-smoothing:antialiased;font-feature-settings:'kern' 1;word-break:keep-all;}
+button{font-family:inherit;}
+input,textarea,select{font-family:inherit;}
+.ae{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
+::-webkit-scrollbar{height:10px;width:10px}
+::-webkit-scrollbar-thumb{background:#e6e6e6;border-radius:9px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (max-width:820px){
+  .app-shell{flex-direction:column!important}
+  .app-sidebar{width:auto!important;height:auto!important;border-right:none!important;border-bottom:1px solid #e6e6e6!important;padding:8px 12px!important;flex-direction:row!important;align-items:center;gap:10px;overflow-x:auto}
+  .sb-nav{flex-direction:row!important;gap:4px!important;flex:1}
+  .sb-brand{margin:0 8px 0 0!important}
+  .sb-foot{display:none!important}
+  .sb-nav button span{display:none!important}
+}
+@media (max-width:600px){
+  .app-head{padding:14px 16px!important;flex-wrap:wrap!important;gap:10px!important;}
+  .head-actions{margin-left:auto!important;}
+  [style*="padding:22px 28px"]{padding-left:16px!important;padding-right:16px!important;}
+  [style*="padding:24px 28px"]{padding-left:16px!important;padding-right:16px!important;}
+}
+@media (max-width:440px){
+  .streak-chip{display:none!important;}
+  .sb-brand div{display:none!important;}
+}
+</style>
+</helmet>
+<div class="app-shell" style="display:flex;height:100vh;width:100%;background:#fff;">
+  <aside class="app-sidebar" style="width:248px;flex:none;height:100vh;background:#fff;border-right:1px solid #e6e6e6;display:flex;flex-direction:column;padding:18px 14px;">
+    <div class="sb-brand" style="display:flex;align-items:center;gap:9px;padding:4px 8px 18px;">
+      <span class="ae" style="font-size:22px;line-height:1;">🎸</span>
+      <div style="font-weight:540;font-size:18px;letter-spacing:-0.4px;">코드살롱</div>
+    </div>
+    <nav class="sb-nav" style="display:flex;flex-direction:column;gap:2px;">
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="5">
+        <button onClick="{{ item.onClick }}" style="{{ item.style }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{ item.iconColor }}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="{{ item.iconPath }}"></path></svg>
+          <span style="white-space:nowrap;">{{ item.label }}</span>
+        </button>
+      </sc-for>
+    </nav>
+    <div class="sb-foot" style="margin-top:auto;padding:14px 8px 2px;border-top:1px solid #e6e6e6;">
+      <div style="display:flex;gap:5px;margin-bottom:14px;">
+        <button onClick="{{ langKo.onClick }}" style="{{ langKo.style }}">KO</button>
+        <button onClick="{{ langEn.onClick }}" style="{{ langEn.style }}">EN</button>
+      </div>
+      <div style="font-family:'JetBrains Mono','D2Coding',monospace;font-size:11px;color:#000;margin-bottom:8px;letter-spacing:0.6px;text-transform:uppercase;">{{ thisWeekLabel }}</div>
+      <div style="display:flex;align-items:baseline;gap:6px;">
+        <span style="font-size:30px;font-weight:340;letter-spacing:-0.8px;">{{ weekCount }}</span>
+        <span style="font-family:'JetBrains Mono','D2Coding',monospace;font-size:12px;color:#000;">{{ weekMeta }}</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="app-main" style="flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;">
+    <header class="app-head" style="flex:none;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:18px 28px;border-bottom:1px solid #e6e6e6;">
+      <div style="min-width:0;">
+        <div style="font-family:'JetBrains Mono','D2Coding',monospace;font-size:12px;letter-spacing:0.6px;text-transform:uppercase;color:#000;margin-bottom:6px;">{{ viewEyebrow }}</div>
+        <div style="font-size:26px;font-weight:540;letter-spacing:-0.4px;line-height:1.1;white-space:nowrap;">{{ viewTitle }}</div>
+      </div>
+      <div class="head-actions" style="display:flex;align-items:center;gap:10px;flex:none;">
+        <div class="streak-chip" style="display:flex;align-items:center;gap:7px;padding:7px 14px;background:#fff;border:1px solid #e6e6e6;border-radius:50px;font-family:'JetBrains Mono','D2Coding',monospace;font-size:12px;letter-spacing:0.4px;color:#000;white-space:nowrap;flex:none;">
+          <span class="ae">🔥</span>{{ streakChip }}
+        </div>
+        <button onClick="{{ logPractice }}" style="{{ primaryBtnStyle }}">{{ headerLogBtn }}</button>
+      </div>
+    </header>
+
+    <div style="flex:1;min-height:0;overflow-y:auto;">
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:24px 28px 56px;">
+          <div style="display:inline-flex;background:#f7f7f5;border-radius:50px;padding:4px;gap:2px;margin-bottom:22px;">
+            <sc-for list="{{ homeLayouts }}" as="item" hint-placeholder-count="3">
+              <button onClick="{{ item.onClick }}" style="{{ item.style }}">{{ item.label }}</button>
+            </sc-for>
+          </div>
+          {{ homeView }}
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDict }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:22px 28px 56px;">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="display:inline-flex;background:#f7f7f5;border-radius:50px;padding:4px;gap:2px;">
+              <sc-for list="{{ dictModes }}" as="item" hint-placeholder-count="2">
+                <button onClick="{{ item.onClick }}" style="{{ item.style }}">{{ item.label }}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ isKeyMode }}" hint-placeholder-val="{{ true }}">
+              <div style="display:inline-flex;background:#f7f7f5;border-radius:50px;padding:4px;gap:2px;">
+                <sc-for list="{{ keyTypeTabs }}" as="item" hint-placeholder-count="2">
+                  <button onClick="{{ item.onClick }}" style="{{ item.style }}">{{ item.label }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div style="position:relative;margin-left:auto;">
+              <input value="{{ query }}" onInput="{{ onSearch }}" placeholder="{{ searchPlaceholder }}" style="width:210px;padding:9px 12px 9px 32px;font-size:15px;border:1px solid #e6e6e6;border-radius:8px;background:#fff;outline:none;color:#000;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" style="position:absolute;left:11px;top:11px;"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3-3"></path></svg>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:22px;">
+            <sc-for list="{{ rootButtons }}" as="item" hint-placeholder-count="12">
+              <button onClick="{{ item.onClick }}" style="{{ item.style }}">{{ item.name }}</button>
+            </sc-for>
+          </div>
+          {{ chordGrid }}
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isScales }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:22px 28px 56px;">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="display:inline-flex;background:#f7f7f5;border-radius:50px;padding:4px;gap:2px;flex-wrap:wrap;">
+              <sc-for list="{{ scaleTabs }}" as="item" hint-placeholder-count="5">
+                <button onClick="{{ item.onClick }}" style="{{ item.style }}">{{ item.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:22px;">
+            <sc-for list="{{ rootButtons }}" as="item" hint-placeholder-count="12">
+              <button onClick="{{ item.onClick }}" style="{{ item.style }}">{{ item.name }}</button>
+            </sc-for>
+          </div>
+          {{ scaleView }}
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isBuilder }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:22px 28px 56px;">{{ builderView }}</div>
+      </sc-if>
+
+      <sc-if value="{{ isPractice }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:22px 28px 56px;">{{ practiceView }}</div>
+      </sc-if>
+
+      <sc-if value="{{ isLesson }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:22px 28px 56px;">{{ lessonView }}</div>
+      </sc-if>
+    </div>
+  </main>
+
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="">
+    {{ detailView }}
+  </sc-if>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="">
+    <div style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:11px 20px;border-radius:50px;font-size:16px;font-weight:480;box-shadow:0 8px 28px rgba(0,0,0,.22);animation:toastIn .22s ease;z-index:50;">{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#0052cc&quot;,&quot;options&quot;:[&quot;#000000&quot;,&quot;#ff3d8b&quot;,&quot;#1f1d3d&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;homeLayout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;focus&quot;,&quot;options&quot;:[&quot;focus&quot;,&quot;board&quot;,&quot;minimal&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;cardSize&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;md&quot;,&quot;options&quot;:[&quot;sm&quot;,&quot;md&quot;,&quot;lg&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  NOTE = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  SUF = {maj:'',min:'m',dim:'dim',aug:'aug',sus2:'sus2',sus4:'sus4',majb5:'(♭5)','m#5':'m(♯5)',mbb5:'m(♭♭5)','sus4#5':'sus4(♯5)',sus2b5:'sus2(♭5)','sus2#5':'sus2(♯5)','7':'7',m7:'m7',maj7:'maj7',mMaj7:'mMaj7',dim7:'dim7',aug7:'7(♯5)',augMaj7:'maj7(♯5)','7b5':'7(♭5)',maj7b5:'maj7(♭5)',m7b5:'m7♭5',mMaj7b5:'mMaj7(♭5)',mMaj7bb5:'mMaj7(♭♭5)','m7#5':'m7(♯5)','mMaj7#5':'mMaj7(♯5)','7b9':'7♭9','6':'6',m6:'m6','6b5':'6(♭5)','6add9':'6/9',m6add9:'m6/9','9':'9',m9:'m9',maj9:'maj9',mMaj9:'mMaj9','9b5':'9(♭5)',aug9:'9(♯5)','9sus4':'9sus4','7#9':'7♯9','7#9b5':'7♯9(♭5)',augMaj9:'maj9(♯5)',add9:'add9','11':'11',m11:'m11',maj11:'maj11',mMaj11:'mMaj11','maj#11':'maj♯11','13':'13',m13:'m13',maj13:'maj13',mMaj13:'mMaj13','7sus2':'7sus2',maj7sus2:'maj7sus2','7sus4':'7sus4',maj7sus4:'maj7sus4','7sus2#5':'7sus2(♯5)','7sus4#5':'7sus4(♯5)'};
+  OPEN = {
+    'C|maj':['x',3,2,0,1,0],'C|7':['x',3,2,3,1,0],'C|maj7':['x',3,2,0,0,0],'C|sus4':['x',3,3,0,1,1],
+    'A|maj':['x',0,2,2,2,0],'A|min':['x',0,2,2,1,0],'A|7':['x',0,2,0,2,0],'A|m7':['x',0,2,0,1,0],'A|maj7':['x',0,2,1,2,0],'A|sus4':['x',0,2,2,3,0],
+    'G|maj':[3,2,0,0,0,3],'G|7':[3,2,0,0,0,1],'G|maj7':[3,2,0,0,0,2],'G|sus4':[3,3,0,0,1,3],
+    'E|maj':[0,2,2,1,0,0],'E|min':[0,2,2,0,0,0],'E|7':[0,2,0,1,0,0],'E|m7':[0,2,0,0,0,0],'E|maj7':[0,2,1,1,0,0],'E|sus4':[0,2,2,2,0,0],
+    'D|maj':['x','x',0,2,3,2],'D|min':['x','x',0,2,3,1],'D|7':['x','x',0,2,1,2],'D|m7':['x','x',0,2,1,1],'D|maj7':['x','x',0,2,2,2],'D|sus4':['x','x',0,2,3,3]
+  };
+  scaleDefs = {major:[0,2,4,5,7,9,11],minor:[0,2,3,5,7,8,10],majpent:[0,2,4,7,9],minpent:[0,3,5,7,10],blues:[0,3,5,6,7,10]};
+  scaleLabels = {major:'메이저',minor:'마이너',majpent:'메이저 펜타토닉',minpent:'마이너 펜타토닉',blues:'블루스'};
+  scaleLabelsEn = {major:'Major',minor:'Minor',majpent:'Major Pentatonic',minpent:'Minor Pentatonic',blues:'Blues'};
+  GLEVELS = ['#ebedf0','#9be9a8','#40c463','#30a14e','#216e39'];
+  QUALS = ['maj','min','dim','aug','sus2','sus4','majb5','m#5','mbb5','sus4#5','sus2b5','sus2#5','7','m7','maj7','mMaj7','dim7','aug7','augMaj7','7b5','maj7b5','m7b5','mMaj7b5','mMaj7bb5','m7#5','mMaj7#5','7b9','6','m6','6b5','6add9','m6add9','9','m9','maj9','mMaj9','9b5','aug9','9sus4','7#9','7#9b5','augMaj9','add9','11','m11','maj11','mMaj11','maj#11','13','m13','maj13','mMaj13','7sus2','maj7sus2','7sus4','maj7sus4','7sus2#5','7sus4#5'];
+  INTERVALS = {maj:[0,4,7],min:[0,3,7],dim:[0,3,6],aug:[0,4,8],sus2:[0,2,7],sus4:[0,5,7],majb5:[0,4,6],'m#5':[0,3,8],mbb5:[0,3,5],'sus4#5':[0,5,8],sus2b5:[0,2,6],'sus2#5':[0,2,8],'7':[0,4,7,10],m7:[0,3,7,10],maj7:[0,4,7,11],mMaj7:[0,3,7,11],dim7:[0,3,6,9],aug7:[0,4,8,10],augMaj7:[0,4,8,11],'7b5':[0,4,6,10],maj7b5:[0,4,6,11],m7b5:[0,3,6,10],mMaj7b5:[0,3,6,11],mMaj7bb5:[0,3,5,11],'m7#5':[0,3,8,10],'mMaj7#5':[0,3,8,11],'7b9':[0,4,7,10,13],'6':[0,4,7,9],m6:[0,3,7,9],'6b5':[0,4,6,9],'6add9':[0,4,7,9,14],m6add9:[0,3,7,9,14],'9':[0,4,7,10,14],m9:[0,3,7,10,14],maj9:[0,4,7,11,14],mMaj9:[0,3,7,11,14],'9b5':[0,4,6,10,14],aug9:[0,4,8,10,14],'9sus4':[0,5,7,10,14],'7#9':[0,4,7,10,15],'7#9b5':[0,4,6,10,15],augMaj9:[0,4,8,11,14],add9:[0,4,7,14],'11':[0,7,10,14,17],m11:[0,3,7,10,14,17],maj11:[0,4,7,11,14,17],mMaj11:[0,3,7,11,14,17],'maj#11':[0,4,7,11,14,18],'13':[0,4,7,10,14,17,21],m13:[0,3,7,10,14,17,21],maj13:[0,4,7,11,14,17,21],mMaj13:[0,3,7,11,14,21],'7sus2':[0,2,7,10],maj7sus2:[0,2,7,11],'7sus4':[0,5,7,10],maj7sus4:[0,5,7,11],'7sus2#5':[0,2,8,10],'7sus4#5':[0,5,8,10]};
+  BARRE_OK = new Set(['maj','min','7','maj7','m7','sus4']);
+  QGROUPS = [
+    {id:'tri',label:'트라이어드 · TRIADS',en:'TRIADS', quals:['maj','min','dim','aug','sus2','sus4','majb5','m#5','mbb5','sus4#5','sus2b5','sus2#5']},
+    {id:'sev',label:'세븐스 · SEVENTH',en:'SEVENTH', quals:['7','m7','maj7','mMaj7','dim7','aug7','augMaj7','7b5','maj7b5','m7b5','mMaj7b5','mMaj7bb5','m7#5','mMaj7#5','7b9']},
+    {id:'six',label:'식스 · SIXTH',en:'SIXTH', quals:['6','m6','6b5','6add9','m6add9']},
+    {id:'nin',label:'나인스 · NINTH',en:'NINTH', quals:['9','m9','maj9','mMaj9','9b5','aug9','9sus4','7#9','7#9b5','augMaj9','add9']},
+    {id:'ele',label:'일레븐스 · ELEVENTH',en:'ELEVENTH', quals:['11','m11','maj11','mMaj11','maj#11']},
+    {id:'thi',label:'써틴스 · THIRTEENTH',en:'THIRTEENTH', quals:['13','m13','maj13','mMaj13']},
+    {id:'sus',label:'서스펜디드 · SUSPENDED',en:'SUSPENDED', quals:['7sus2','maj7sus2','7sus4','maj7sus4','7sus2#5','7sus4#5']}
+  ];
+  OPENPC = [4,9,2,7,11,4];
+
+  state = {
+    lang:null,
+    view:'home', selectedRoot:0, keyType:'major', dictMode:'key', scaleType:'major',
+    query:'', collected:[], sequence:[null,null,null,null,null,null,null,null], armedChord:null, timeSig:'4/4', sheetTitle:'', sheets:[], lyrics:{},
+    grass:{}, journal:[], homeLayout:null, toast:'',
+    jTitle:'', jMin:30, jChords:'', jNotes:'',
+    drills:[], dTitle:'', dTarget:5,
+    lessons:[], lTeacher:'', lTitle:'', lMin:30, lHomework:'', lNotes:'',
+    detailChord:null
+  };
+
+  componentDidMount(){
+    this.load();
+    this.seedExampleSheet();
+  }
+  seedExampleSheet(){
+    if(this.state.sequence.some(Boolean)) return;
+    const prog=[['C','maj'],['G','maj'],['A','min'],['E','min'],['F','maj'],['C','maj'],['F','maj'],['G','maj']];
+    const seq=prog.map(([n,q])=>{ const ni=this.NOTE.indexOf(n); const ch=this.buildChord(ni,q); return {name:ch.name,frets:ch.frets}; });
+    this.setState({sequence:seq,sheetTitle:this.L('\uce90\ub17c \uc9c4\ud589 (\uc608\uc2dc)','Canon Progression (example)'),timeSig:'4/4'});
+  }
+  // ---------- storage ----------
+  load(){
+    try{ const lg=localStorage.getItem('cs_lang'); if(lg&&!this.state.lang) this.setState({lang:lg}); }catch(e){}
+    let grass={}, journal=null, collected=null, sheets=null, drills=null, lessons=null;
+    try{ grass = JSON.parse(localStorage.getItem('cs_grass')||'null'); }catch(e){}
+    try{ journal = JSON.parse(localStorage.getItem('cs_journal')||'null'); }catch(e){}
+    try{ collected = JSON.parse(localStorage.getItem('cs_collected')||'null'); }catch(e){}
+    try{ sheets = JSON.parse(localStorage.getItem('cs_sheets')||'null'); }catch(e){}
+    try{ drills = JSON.parse(localStorage.getItem('cs_drills')||'null'); }catch(e){}
+    try{ lessons = JSON.parse(localStorage.getItem('cs_lessons')||'null'); }catch(e){}
+    if(!grass) grass = this.seedGrass();
+    if(!journal) journal = this.seedJournal();
+    if(!collected) collected = ['C|maj','G|maj','A|min','F|maj'].map(k=>{const[r,q]=k.split('|');return this.buildChord(this.NOTE.indexOf(r),q);});
+    if(!sheets) sheets = [];
+    if(!drills) drills = this.seedDrills();
+    if(!lessons) lessons = this.seedLessons();
+    this.setState({grass,journal,collected,sheets,drills,lessons});
+  }
+  save(p){ try{ if(p.grass)localStorage.setItem('cs_grass',JSON.stringify(p.grass)); if(p.journal)localStorage.setItem('cs_journal',JSON.stringify(p.journal)); if(p.collected)localStorage.setItem('cs_collected',JSON.stringify(p.collected)); if(p.sheets)localStorage.setItem('cs_sheets',JSON.stringify(p.sheets)); if(p.drills)localStorage.setItem('cs_drills',JSON.stringify(p.drills)); if(p.lessons)localStorage.setItem('cs_lessons',JSON.stringify(p.lessons)); }catch(e){} }
+  seedDrills(){
+    if(this.lang()==='en') return [
+      {id:'d1',title:'Clean F barre chord',target:10,count:6},
+      {id:'d2',title:'Canon progression C-G-Am-Em-F changes',target:8,count:3},
+      {id:'d3',title:'Chromatic warm-up (1-2-3-4)',target:5,count:5},
+      {id:'d4',title:'A minor pentatonic, 5 positions',target:5,count:0}
+    ];
+    return [
+      {id:'d1',title:'F 바레코드 깨끗하게 누르기',target:10,count:6},
+      {id:'d2',title:'캐논 진행 C\u2013G\u2013Am\u2013Em\u2013F 전환',target:8,count:3},
+      {id:'d3',title:'크로매틱 워밍업 (1-2-3-4)',target:5,count:5},
+      {id:'d4',title:'A 마이너 펜타토닉 5포지션',target:5,count:0}
+    ];
+  }
+  seedLessons(){ const t=new Date(); const ds=o=>{const d=new Date(t);d.setDate(t.getDate()-o);return this.dateStr(d);};
+    if(this.lang()==='en') return [
+      {id:'l1',date:ds(2),teacher:'Mr. Kim',title:'F barre chord & 8-beat strum',minutes:50,homework:'Clean F barre chord\nCanon progression, slow changes',notes:'Press with the side of the index finger. Relax the wrist.'},
+      {id:'l2',date:ds(9),teacher:'Mr. Kim',title:'Basic chord changes (C-G-Am-F)',minutes:50,homework:'C G Am F, 4 beats each\nMatch metronome at 70bpm',notes:'Pre-shape the next chord before changing.'}
+    ];
+    return [
+      {id:'l1',date:ds(2),teacher:'김선생',title:'F 바레코드와 8비트 스트로크',minutes:50,homework:'F 바레코드 깨끗하게 누르기\n캐논 진행 천천히 전환하기',notes:'검지 측면으로 누르는 게 핵심. 손목 힘 빼기.'},
+      {id:'l2',date:ds(9),teacher:'김선생',title:'기초 코드 전환 (C\u2013G\u2013Am\u2013F)',minutes:50,homework:'C G Am F 4박자씩 전환\n메트로놈 70bpm 맞추기',notes:'코드 바꿀 때 미리 손모양 준비하기.'}
+    ];
+  }
+  seedGrass(){
+    const g={}; const today=new Date(); today.setHours(0,0,0,0);
+    for(let i=0;i<150;i++){ const d=new Date(today); d.setDate(today.getDate()-i); const v=Math.abs((i*2654435761)%97); let c=0; if(v<24)c=0; else if(v<50)c=1; else if(v<72)c=2; else if(v<89)c=3; else c=4; if(c>0) g[this.dateStr(d)]=c; }
+    [2,2,1,3,1,2,1].forEach((c,i)=>{ const d=new Date(today); d.setDate(today.getDate()-i); g[this.dateStr(d)]=c; });
+    return g;
+  }
+  seedJournal(){
+    const t=new Date(); const ds=o=>{const d=new Date(t);d.setDate(t.getDate()-o);return this.dateStr(d);};
+    if(this.lang()==='en') return [
+      {id:'s1',date:ds(0),title:'F barre chord focus',minutes:35,chords:['F','C','G','Am'],notes:'F barre was not ringing clean, worked slowly on the 1st string. Pressing with the side of the finger helped.'},
+      {id:'s2',date:ds(2),title:'Canon chord progression',minutes:50,chords:['C','G','Am','Em','F'],notes:'I-V-vi-iii-IV at 80bpm. Changes getting smoother.'},
+      {id:'s3',date:ds(5),title:'Pentatonic scale warm-up',minutes:20,chords:['Am7','Dm7'],notes:'A minor pentatonic, 5 positions. Finger warm-up.'}
+    ];
+    return [
+      {id:'s1',date:ds(0),title:'F 바레코드 집중',minutes:35,chords:['F','C','G','Am'],notes:'F 바레가 깨끗하게 안 눌려서 1번 줄 위주로 천천히 연습. 검지 측면으로 누르니 좀 나아짐.'},
+      {id:'s2',date:ds(2),title:'캐논 코드 진행',minutes:50,chords:['C','G','Am','Em','F'],notes:'I-V-vi-iii-IV 진행 메트로놈 80bpm. 코드 전환 매끄러워지는 중.'},
+      {id:'s3',date:ds(5),title:'펜타토닉 스케일 워밍업',minutes:20,chords:['Am7','Dm7'],notes:'A 마이너 펜타토닉 5포지션. 손가락 풀기용.'}
+    ];
+  }
+  // ---------- i18n ----------
+  autoLang(){ try{ return (navigator.language||navigator.userLanguage||'en').toLowerCase().indexOf('ko')===0?'ko':'en'; }catch(e){ return 'en'; } }
+  lang(){ return this.state.lang || this.props.lang || (this.__al || (this.__al=this.autoLang())); }
+  L(ko,en){ return this.lang()==='en'?en:ko; }
+  setLang(l){ this.setState({lang:l}); try{ localStorage.setItem('cs_lang',l); }catch(e){} }
+  scaleLabel(k){ return this.L(this.scaleLabels[k], this.scaleLabelsEn[k]); }
+  // ---------- helpers ----------
+  noteName(i){ return this.NOTE[((i%12)+12)%12]; }
+  dateStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  colors(){ const a=this.props.accentColor||'#000000'; return {ink:'#000000',muted:'#5b5b57',faint:'#9a9893',border:'#e6e6e6',line:'#f1f1f1',panel:'#f7f7f5',accent:a,soft:a+'14'}; }
+  cardW(){ return {sm:92,md:108,lg:128}[this.props.cardSize||'md']; }
+
+  buildChord(ni,qual){
+    const name=this.noteName(ni)+(this.SUF[qual]||''); let frets;
+    const key=this.noteName(ni)+'|'+qual;
+    if(this.OPEN[key]) frets=this.OPEN[key].slice();
+    else if(qual==='m7b5'){ const n=((ni-9)+12)%12; frets=['x',n,n+1,n,n+1,'x']; }
+    else if(this.BARRE_OK.has(qual)) frets=this.barre(ni,qual);
+    else frets=this.bestVoicing(ni,qual);
+    return {name,frets,root:ni,qualKey:qual,key:name};
+  }
+  barre(ni,qual){
+    const E={maj:[0,2,2,1,0,0],min:[0,2,2,0,0,0],'7':[0,2,0,1,0,0],maj7:[0,2,1,1,0,0],m7:[0,2,0,0,0,0],sus4:[0,2,2,2,0,0]};
+    const A={maj:['x',0,2,2,2,0],min:['x',0,2,2,1,0],'7':['x',0,2,0,2,0],maj7:['x',0,2,1,2,0],m7:['x',0,2,0,1,0],sus4:['x',0,2,2,3,0]};
+    let eBase=((ni-4)+12)%12, aBase=((ni-9)+12)%12, useA=false, base=eBase;
+    if(eBase===0){ if(aBase>0){useA=true;base=aBase;} }
+    else if(aBase>0 && aBase<eBase){ useA=true; base=aBase; }
+    const shape=useA?A[qual]:E[qual];
+    return shape.map(v=> v==='x'?'x': base+v);
+  }
+  // ---------- voicing generator ----------
+  chordPCs(root,qual){ const iv=this.INTERVALS[qual]||[0,4,7]; const set=new Set(); iv.forEach(i=>set.add((root+i)%12)); return set; }
+  requiredPCs(root,qual){ let sem=[...new Set((this.INTERVALS[qual]||[0,4,7]).map(i=>i%12))]; const drop=[7,2,5]; let i=0; while(sem.length>4 && i<drop.length){ sem=sem.filter(x=>x!==drop[i]); i++; } if(sem.length>4) sem=sem.slice(0,4); const set=new Set(); sem.forEach(s=>set.add((root+s)%12)); return set; }
+  _enumBase(base,full,req,rootPc){
+    const OPEN=[40,45,50,55,59,64]; const cand=[];
+    for(let s=0;s<6;s++){ const opts=['x']; const fl=new Set(); if(base>0) fl.add(0); for(let f=Math.max(0,base);f<base+4;f++) fl.add(f); fl.forEach(f=>{ if(full.has((OPEN[s]+f)%12)) opts.push(f); }); cand.push(opts); }
+    const out=[]; const cur=new Array(6);
+    const rec=(s)=>{ if(s===6){ this._collect(cur,req,rootPc,OPEN,out); return; } const o=cand[s]; for(let i=0;i<o.length;i++){ cur[s]=o[i]; rec(s+1); } };
+    rec(0); return out;
+  }
+  _collect(frets,req,rootPc,OPEN,out){
+    let first=-1,last=-1,cnt=0; for(let s=0;s<6;s++){ if(frets[s]!=='x'){ if(first<0)first=s; last=s; cnt++; } }
+    if(cnt<4) return;
+    for(let s=first;s<=last;s++){ if(frets[s]==='x') return; }
+    let mn=99,mx=0; for(let s=first;s<=last;s++){ const f=frets[s]; if(f>0){ if(f<mn)mn=f; if(f>mx)mx=f; } }
+    if(mx>0 && mx-mn>4) return;
+    const pcs=new Set(); for(let s=first;s<=last;s++) pcs.add((OPEN[s]+frets[s])%12);
+    for(const r of req){ if(!pcs.has(r)) return; }
+    const bassPc=(OPEN[first]+frets[first])%12;
+    const pos=mx>0?mn:0; let score=0; if(bassPc!==rootPc) score+=4; score+=(6-cnt); if(mx>0) score+=(mx-mn)*0.3;
+    out.push({frets:frets.slice(),pos,score});
+  }
+  bestVoicing(root,qual){
+    const ck='b'+root+'|'+qual; this._vc=this._vc||{}; if(this._vc[ck]) return this._vc[ck];
+    const full=this.chordPCs(root,qual), req=this.requiredPCs(root,qual), rootPc=root%12; let best=null;
+    for(let base=0;base<=10;base++){ const vs=this._enumBase(base,full,req,rootPc); for(const v of vs){ if(!best||v.score<best.score) best=v; } if(best) break; }
+    const frets=best?best.frets:['x','x','x','x','x','x']; this._vc[ck]=frets; return frets;
+  }
+  allVoicings(root,qual){
+    const ck='a'+root+'|'+qual; this._vc=this._vc||{}; if(this._vc[ck]) return this._vc[ck];
+    const full=this.chordPCs(root,qual), req=this.requiredPCs(root,qual), rootPc=root%12; const byPos={};
+    for(let base=0;base<=11;base++){ const vs=this._enumBase(base,full,req,rootPc); for(const v of vs){ const k=v.pos; if(!byPos[k]||v.score<byPos[k].score) byPos[k]=v; } }
+    const list=Object.values(byPos).sort((a,b)=>a.pos-b.pos||a.score-b.score).slice(0,10).map(v=>v.frets); this._vc[ck]=list; return list;
+  }
+  // ---------- chord detail ----------
+  openDetail(ch){ this.setState({detailChord:{root:ch.root,qualKey:ch.qualKey,name:ch.name}}); }
+  closeDetail(){ this.setState({detailChord:null}); }
+  diagramTone(frets,w){
+    const h=React.createElement,C=this.colors(),g=this.computeDiagram(frets);
+    const GC='#9c9a94';
+    const VB=104,VH=136,ML=22,gap=(VB-40)/5,nutY=30,bottom=126,fretH=(bottom-nutY)/5,markerY=14;
+    const sx=i=>ML+i*gap, fy=r=>nutY+r*fretH, dy=row=>nutY+(row-0.5)*fretH; const els=[];
+    for(let r=0;r<=5;r++) els.push(h('line',{key:'f'+r,x1:sx(0),y1:fy(r),x2:sx(5),y2:fy(r),stroke:(r===0&&g.showNut)?C.ink:GC,strokeWidth:(r===0&&g.showNut)?3:1.3}));
+    for(let s=0;s<6;s++) els.push(h('line',{key:'s'+s,x1:sx(s),y1:nutY,x2:sx(s),y2:bottom,stroke:GC,strokeWidth:1.3}));
+    for(let row=1;row<=5;row++){ const fn=g.start+row-1; els.push(h('text',{key:'fn'+row,x:sx(0)-7,y:dy(row)+3,fontSize:8,fill:C.faint,textAnchor:'end',fontFamily:'"JetBrains Mono",monospace'},fn)); }
+    g.markers.forEach((m,i)=>{ if(m.type==='open') els.push(h('circle',{key:'m'+i,cx:sx(m.s),cy:markerY,r:3.6,fill:'none',stroke:C.faint,strokeWidth:1.4})); else els.push(h('text',{key:'m'+i,x:sx(m.s),y:markerY+4,fontSize:12,fill:C.faint,textAnchor:'middle',fontFamily:'"JetBrains Mono",monospace'},'\u00d7')); });
+    g.dots.forEach((d,i)=>{ const note=this.noteName((this.OPENPC[d.s]+frets[d.s])%12); els.push(h('circle',{key:'d'+i,cx:sx(d.s),cy:dy(d.row),r:7.6,fill:C.ink})); els.push(h('text',{key:'dt'+i,x:sx(d.s),y:dy(d.row)+2.6,fontSize:6.6,fill:'#fff',textAnchor:'middle',fontWeight:700,fontFamily:'"JetBrains Mono",monospace'},note)); });
+    return h('svg',{width:w,height:Math.round(w*VH/VB),viewBox:'0 0 '+VB+' '+VH,style:{display:'block'}},els);
+  }
+  detailView(){
+    const h=React.createElement,C=this.colors(),d=this.state.detailChord; if(!d) return null;
+    const voicings=this.allVoicings(d.root,d.qualKey);
+    const tones=this.INTERVALS[d.qualKey].map(i=>this.noteName((d.root+i)%12));
+    const cards=voicings.map((fr,i)=>{ const g=this.computeDiagram(fr); const pos=g.showNut?'OPEN':(g.start+'fr');
+      const fc={name:d.name+' ('+(g.showNut?'open':g.start+'fr')+')',frets:fr,root:d.root,qualKey:d.qualKey};
+      const ib=(nm,on,tt)=>h('button',{onClick:on,title:tt,style:{width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid '+C.border,borderRadius:9999,background:'#fff',color:C.muted,cursor:'pointer'}},this.svgIcon(nm));
+      return h('div',{key:i,style:{border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'12px 10px 10px',display:'flex',flexDirection:'column',alignItems:'center',gap:8}},
+        h('div',{style:{fontFamily:'"JetBrains Mono",monospace',fontSize:11,letterSpacing:'0.4px',color:C.faint,whiteSpace:'nowrap'}},(i+1)+' · '+pos),
+        this.diagramTone(fr,112),
+        h('div',{style:{display:'flex',gap:7}}, ib('play',()=>this.playChord(fr),'재생'), ib('bookmark',()=>this.addToCollected(fc),'담기'), ib('copy',()=>this.copyChord(fc),'복사'))); });
+    return h('div',{onClick:()=>this.closeDetail(),style:{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:80,display:'flex',alignItems:'flex-start',justifyContent:'center',padding:'40px 20px',overflowY:'auto'}},
+      h('div',{onClick:e=>e.stopPropagation(),style:{background:'#fff',borderRadius:24,maxWidth:720,width:'100%',padding:'28px 30px',boxShadow:'0 20px 60px rgba(0,0,0,0.25)'}},
+        h('div',{style:{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16,marginBottom:8}},
+          h('div',{},
+            h('div',{style:{fontFamily:'"JetBrains Mono",monospace',fontSize:12,letterSpacing:'0.6px',textTransform:'uppercase',color:C.faint,marginBottom:6}},'🎸 ALL VOICINGS · '+voicings.length+'폼'),
+            h('div',{style:{fontSize:34,fontWeight:700,letterSpacing:'-0.5px'}},d.name)),
+          h('button',{onClick:()=>this.closeDetail(),style:{width:40,height:40,borderRadius:9999,border:'1px solid '+C.border,background:'#fff',color:C.ink,cursor:'pointer',fontSize:20,lineHeight:1,flex:'none'}},'\u00d7')),
+        h('div',{style:{display:'flex',gap:6,flexWrap:'wrap',marginBottom:20}},tones.map((t,i)=>h('span',{key:i,style:{fontFamily:'"JetBrains Mono",monospace',fontSize:12,fontWeight:600,color:C.ink,background:'#f7f7f5',border:'1px solid '+C.border,borderRadius:50,padding:'4px 11px'}},t))),
+        voicings.length? h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(132px,1fr))',gap:12}},cards)
+          : h('div',{style:{padding:'30px',textAlign:'center',color:C.faint,fontSize:15}},'이 코드의 표준 폼을 찾지 못했어요.')));
+  }
+  diatonic(rootIdx,type){
+    const majSteps=[0,2,4,5,7,9,11], minSteps=[0,2,3,5,7,8,10];
+    const majQ=['maj7','m7','m7','maj7','7','m7','m7b5'], majR=['Imaj7','ii m7','iii m7','IV maj7','V7','vi m7','vii\u00f8'];
+    const minQ=['m7','m7b5','maj7','m7','m7','maj7','7'], minR=['i m7','ii\u00f8','\u266dIII maj7','iv m7','v m7','\u266dVI maj7','\u266dVII7'];
+    const steps=type==='major'?majSteps:minSteps, quals=type==='major'?majQ:minQ, romans=type==='major'?majR:minR;
+    return steps.map((st,i)=>{ const ni=(rootIdx+st)%12; const ch=this.buildChord(ni,quals[i]); return Object.assign(ch,{roman:romans[i],key:'d'+i}); });
+  }
+  scaleNotes(root,type){ return this.scaleDefs[type].map(s=>(root+s)%12); }
+
+  // ---------- diagram geometry ----------
+  computeDiagram(frets){
+    const nums=frets.map(f=> f==='x'?'x':f);
+    const fretted=nums.filter(f=> f!=='x' && f>0);
+    let start=1; const span=5;
+    if(fretted.length){ const mx=Math.max(...fretted), mn=Math.min(...fretted); if(mx>5) start=Math.max(1,mn); }
+    const dots=[],markers=[];
+    nums.forEach((f,i)=>{ if(f==='x') markers.push({s:i,type:'mute'}); else if(f===0) markers.push({s:i,type:'open'}); else dots.push({s:i,row:f-start+1}); });
+    return {start,span,showNut:start===1,dots,markers};
+  }
+  diagramEl(frets,w){
+    const h=React.createElement,C=this.colors(),g=this.computeDiagram(frets);
+    const GC='#9c9a94';
+    const VB=104,VH=136,ML=20,gap=(VB-38)/5,nutY=30,bottom=126,fretH=(bottom-nutY)/5,markerY=14;
+    const sx=i=>ML+i*gap, fy=r=>nutY+r*fretH, dy=row=>nutY+(row-0.5)*fretH;
+    const els=[];
+    for(let r=0;r<=5;r++) els.push(h('line',{key:'f'+r,x1:sx(0),y1:fy(r),x2:sx(5),y2:fy(r),stroke:(r===0&&g.showNut)?C.ink:GC,strokeWidth:(r===0&&g.showNut)?3:1.3}));
+    for(let s=0;s<6;s++) els.push(h('line',{key:'s'+s,x1:sx(s),y1:nutY,x2:sx(s),y2:bottom,stroke:GC,strokeWidth:1.3}));
+    if(!g.showNut) els.push(h('text',{key:'pos',x:sx(0)-7,y:dy(1)+3,fontSize:9,fill:C.faint,textAnchor:'end',fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace'},g.start));
+    g.markers.forEach((m,i)=>{ if(m.type==='open') els.push(h('circle',{key:'m'+i,cx:sx(m.s),cy:markerY,r:3.6,fill:'none',stroke:C.faint,strokeWidth:1.4})); else els.push(h('text',{key:'m'+i,x:sx(m.s),y:markerY+4,fontSize:12,fill:C.faint,textAnchor:'middle',fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace'},'\u00d7')); });
+    g.dots.forEach((d,i)=> els.push(h('circle',{key:'d'+i,cx:sx(d.s),cy:dy(d.row),r:6.4,fill:C.ink})));
+    return h('svg',{width:w,height:Math.round(w*VH/VB),viewBox:'0 0 '+VB+' '+VH,style:{display:'block'}},els);
+  }
+  renderCanvas(chord){
+    const g=this.computeDiagram(chord.frets),C=this.colors(),SC=4,VB=104,VH=136,TH=24;
+    const cv=document.createElement('canvas'); cv.width=VB*SC; cv.height=(VH+TH)*SC; const x=cv.getContext('2d');
+    x.fillStyle='#fff'; x.fillRect(0,0,cv.width,cv.height);
+    x.fillStyle=C.ink; x.textAlign='center'; x.font='600 '+(16*SC)+'px ui-sans-serif,system-ui,sans-serif'; x.fillText(chord.name,cv.width/2,18*SC);
+    const off=TH*SC, ML=18*SC, gap=(VB-36)*SC/5, nutY=30*SC+off, bottom=126*SC+off, fretH=(bottom-nutY)/5, markerY=14*SC+off;
+    const sx=i=>ML+i*gap, fy=r=>nutY+r*fretH, dy=row=>nutY+(row-0.5)*fretH;
+    for(let r=0;r<=5;r++){ x.beginPath(); x.lineWidth=(r===0&&g.showNut)?3*SC:1*SC; x.strokeStyle=(r===0&&g.showNut)?C.ink:C.border; x.moveTo(sx(0),fy(r)); x.lineTo(sx(5),fy(r)); x.stroke(); }
+    x.lineWidth=1*SC; x.strokeStyle=C.border;
+    for(let s=0;s<6;s++){ x.beginPath(); x.moveTo(sx(s),nutY); x.lineTo(sx(s),bottom); x.stroke(); }
+    if(!g.showNut){ x.fillStyle=C.faint; x.textAlign='right'; x.font=(11*SC)+'px "JetBrains Mono","D2Coding",ui-monospace,monospace'; x.fillText(g.start+'fr',sx(0)-6*SC,fy(1)+4*SC); }
+    g.markers.forEach(m=>{ if(m.type==='open'){ x.beginPath(); x.lineWidth=1.4*SC; x.strokeStyle=C.faint; x.arc(sx(m.s),markerY,3.6*SC,0,7); x.stroke(); } else { x.fillStyle=C.faint; x.textAlign='center'; x.font=(13*SC)+'px "JetBrains Mono","D2Coding",ui-monospace,monospace'; x.fillText('\u00d7',sx(m.s),markerY+4*SC); } });
+    x.fillStyle=C.ink; g.dots.forEach(d=>{ x.beginPath(); x.arc(sx(d.s),dy(d.row),6.4*SC,0,7); x.fill(); });
+    return cv;
+  }
+  copyChord(chord){
+    const cv=this.renderCanvas(chord);
+    cv.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); this.toast(this.L(chord.name+' 다이어그램을 복사했어요', chord.name+' diagram copied')); }catch(e){ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=chord.name+'.png'; a.click(); this.toast(this.L(chord.name+' 이미지를 저장했어요', chord.name+' image saved')); } },'image/png');
+  }
+  // ---------- audio ----------
+  ensureAudio(){ if(!this.ac){ try{ this.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){return null;} } if(this.ac.state==='suspended') this.ac.resume(); return this.ac; }
+  midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
+  pluck(ac,freq,t){
+    const o1=ac.createOscillator(); o1.type='sawtooth'; o1.frequency.value=freq;
+    const o2=ac.createOscillator(); o2.type='triangle'; o2.frequency.value=freq; o2.detune.value=5;
+    const f=ac.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(Math.min(freq*7,8000),t); f.frequency.exponentialRampToValueAtTime(Math.max(freq*2,700),t+0.6); f.Q.value=0.6;
+    const g=ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.2,t+0.006); g.gain.exponentialRampToValueAtTime(0.0001,t+1.7);
+    o1.connect(f); o2.connect(f); f.connect(g); g.connect(ac.destination);
+    o1.start(t); o2.start(t); o1.stop(t+1.8); o2.stop(t+1.8);
+  }
+  playChordAt(frets,now){ const ac=this.ensureAudio(); if(!ac)return; const open=[40,45,50,55,59,64]; let idx=0; for(let i=0;i<6;i++){ const fr=frets[i]; if(fr==='x')continue; const midi=open[i]+fr; this.pluck(ac,this.midiToFreq(midi),now+idx*0.038); idx++; } }
+  playChord(frets){ const ac=this.ensureAudio(); if(ac) this.playChordAt(frets,ac.currentTime+0.02); }
+  strumSeq(seq){ const ac=this.ensureAudio(); if(!ac)return; let t=ac.currentTime+0.05; let n=0; seq.forEach(c=>{ if(c){ this.playChordAt(c.frets,t); n++; } t+=0.62; }); this.toast(this.L('재생 중 · '+n+'코드','Playing · '+n+' chords')); }
+
+  // ---------- actions ----------
+  toast(msg){ this.setState({toast:msg}); clearTimeout(this._tt); this._tt=setTimeout(()=>this.setState({toast:''}),1900); }
+  setView(v){ this.setState({view:v}); }
+  addToCollected(ch){ const ex=this.state.collected.some(c=>c.name===ch.name); if(ex){ this.toast(ch.name+this.L(' 은 이미 담겨있어요',' is already saved')); return;} const col=[...this.state.collected,{name:ch.name,frets:ch.frets,key:ch.name}]; this.setState({collected:col}); this.save({collected:col}); this.toast(ch.name+this.L(' 담음 · 악보에서 편성하세요',' saved · arrange it in Sheet')); }
+  removeCollected(i){ const col=this.state.collected.filter((_,x)=>x!==i); this.setState({collected:col}); this.save({collected:col}); }
+  appendSeq(ch){ this.setState({sequence:[...this.state.sequence,{name:ch.name,frets:ch.frets}]}); }
+  removeSeqAt(i){ this.setState({sequence:this.state.sequence.filter((_,x)=>x!==i)}); }
+  clearSeq(){ this.setState({sequence:[]}); }
+  beatsOf(){ return {'4/4':4,'3/4':3,'6/8':6}[this.state.timeSig]; }
+  padSlots(seq,beats){ const out=seq.slice(); while(out.length%beats!==0) out.push(null); if(out.length===0){ for(let i=0;i<beats*2;i++) out.push(null); } return out; }
+  armChord(ch){ const a=this.state.armedChord; const same=a&&a.name===ch.name&&JSON.stringify(a.frets)===JSON.stringify(ch.frets); this.setState({armedChord:same?null:{name:ch.name,frets:ch.frets}}); }
+  placeAt(i){ const seq=this.state.sequence.slice(); const a=this.state.armedChord; if(a){ seq[i]={name:a.name,frets:a.frets}; } else { seq[i]=null; } this.setState({sequence:seq}); }
+  clearSlot(i){ const seq=this.state.sequence.slice(); seq[i]=null; this.setState({sequence:seq}); }
+  addMeasure(){ const beats=this.beatsOf(); const seq=this.state.sequence.slice(); for(let i=0;i<beats;i++) seq.push(null); this.setState({sequence:seq}); }
+  removeMeasure(mi){ const beats=this.beatsOf(); const seq=this.state.sequence.slice(); seq.splice(mi*beats,beats); this.setState({sequence:this.padSlots(seq,beats)}); }
+  setTimeSig(t){ const beats={'4/4':4,'3/4':3,'6/8':6}[t]; this.setState({timeSig:t,sequence:this.padSlots(this.state.sequence,beats)}); }
+  appendSeq(ch){ const seq=this.state.sequence.slice(); let i=seq.findIndex(x=>x===null); if(i<0){ const beats=this.beatsOf(); for(let k=0;k<beats;k++) seq.push(null); i=seq.length-beats; } seq[i]={name:ch.name,frets:ch.frets}; this.setState({sequence:seq}); }
+  removeSeqAt(i){ this.clearSlot(i); }
+  clearSeq(){ const beats=this.beatsOf(); this.setState({sequence:new Array(beats*2).fill(null)}); }
+  saveSheet(){ const s=this.state; const filled=s.sequence.filter(Boolean); if(!filled.length){ this.toast(this.L('코드를 먼저 넣어주세요','Add a chord first')); return; } const sheet={id:'sh'+Date.now(),title:s.sheetTitle||this.L('무제 악보','Untitled sheet'),seq:s.sequence.slice(),timeSig:s.timeSig,date:this.dateStr(new Date())}; const sheets=[sheet,...s.sheets]; this.setState({sheets}); this.save({sheets}); this.toast(this.L('악보를 저장했어요','Sheet saved')); }
+  loadSheet(sh){ const beats={'4/4':4,'3/4':3,'6/8':6}[sh.timeSig]; this.setState({sequence:this.padSlots(sh.seq.slice(),beats),timeSig:sh.timeSig,sheetTitle:sh.title}); this.toast(this.L(sh.title+' 불러옴','Loaded '+sh.title)); }
+  deleteSheet(id){ const sheets=this.state.sheets.filter(s=>s.id!==id); this.setState({sheets}); this.save({sheets}); }
+  logPractice(){ const ds=this.dateStr(new Date()); const grass={...this.state.grass,[ds]:(this.state.grass[ds]||0)+1}; this.setState({grass}); this.save({grass}); this.toast(this.L('오늘 연습 +1 · 잔디가 자랐어요','Practice +1 · your streak grew')); }
+  addJournal(){ const s=this.state; if(!s.jTitle.trim()){ this.toast(this.L('제목을 입력하세요','Enter a title')); return; } const ds=this.dateStr(new Date()); const entry={id:'j'+Date.now(),date:ds,title:s.jTitle.trim(),minutes:Number(s.jMin)||0,chords:s.jChords.split(/[ ,]+/).filter(Boolean),notes:s.jNotes.trim()}; const journal=[entry,...s.journal]; const grass={...s.grass,[ds]:(s.grass[ds]||0)+1}; this.setState({journal,grass,jTitle:'',jMin:30,jChords:'',jNotes:''}); this.save({journal,grass}); this.toast(this.L('연습 일지를 기록했어요','Journal entry saved')); }
+  // ---------- drills (practice checklist) ----------
+  addDrill(){ const t=this.state.dTitle.trim(); if(!t){ this.toast(this.L('연습할 내용을 입력하세요','Enter a drill')); return; } const target=Math.max(1,Math.min(40,Number(this.state.dTarget)||5)); const drill={id:'d'+Date.now(),title:t,target,count:0}; const drills=[...this.state.drills,drill]; this.setState({drills,dTitle:'',dTarget:5}); this.save({drills}); }
+  setDrillCount(id,n){ const before=this.state.drills.find(d=>d.id===id); const drills=this.state.drills.map(d=>d.id===id?{...d,count:Math.max(0,n)}:d); this.setState({drills}); this.save({drills}); const after=drills.find(d=>d.id===id); if(after.count>=after.target && before.count<before.target){ this.logPractice(); this.toast(this.L(after.title+' 목표 달성! 잔디 +1', after.title+' — goal reached! Streak +1')); } }
+  bumpDrillTarget(id,delta){ const drills=this.state.drills.map(d=>d.id===id?{...d,target:Math.max(1,Math.min(40,d.target+delta))}:d); this.setState({drills}); this.save({drills}); }
+  removeDrill(id){ const drills=this.state.drills.filter(d=>d.id!==id); this.setState({drills}); this.save({drills}); }
+  resetDrills(){ const drills=this.state.drills.map(d=>({...d,count:0})); this.setState({drills}); this.save({drills}); this.toast(this.L('오늘 체크를 모두 비웠어요',"Cleared today's checks")); }
+  addDrillFromSheet(sh){ if(this.state.drills.some(d=>d.sheetId===sh.id)){ this.toast(this.L('「'+sh.title+'」 은 이미 목록에 있어요','“'+sh.title+'” is already in the list')); return; } const drill={id:'d'+Date.now(),title:sh.title,target:5,count:0,seq:sh.seq.slice(),sheetId:sh.id,timeSig:sh.timeSig}; const drills=[...this.state.drills,drill]; this.setState({drills}); this.save({drills}); this.toast(this.L('「'+sh.title+'」 을 연습 목록에 담았어요','Added “'+sh.title+'” to drills')); }
+  stepBtn(){ const C=this.colors(); return {width:24,height:24,borderRadius:6,border:'1px solid '+C.border,background:'#fff',color:C.muted,cursor:'pointer',fontSize:15,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center',flex:'none',padding:0}; }
+  drillsView(){ const h=React.createElement,C=this.colors(),s=this.state;
+    const done=s.drills.filter(d=>d.target>0&&d.count>=d.target).length;
+    const stamp=(filled,on,key)=>h('button',{key,onClick:on,style:{width:25,height:25,flex:'none',borderRadius:'50%',cursor:'pointer',padding:0,border:filled?('1px solid '+C.accent):('1.4px dashed '+C.border),background:filled?C.accent:'#fff',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .1s'}},
+      filled?h('svg',{width:12,height:12,viewBox:'0 0 24 24',fill:'none',stroke:'#fff',strokeWidth:3.4,strokeLinecap:'round',strokeLinejoin:'round'},h('path',{d:'M5 12l4.5 4.5L19 6'})):null);
+    const row=(d)=>{ const complete=d.count>=d.target; const circles=[]; for(let i=0;i<d.target;i++){ const filled=i<d.count; circles.push(stamp(filled,()=>this.setDrillCount(d.id,(i+1===d.count)?i:i+1),i)); }
+      return h('div',{key:d.id,style:{padding:'14px 2px',borderBottom:'1px solid '+C.line,display:'flex',flexDirection:'column',gap:11}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:9}},
+          h('span',{style:{width:8,height:8,borderRadius:'50%',flex:'none',background:complete?C.accent:'#dcdbd7'}}),
+          h('span',{style:{fontSize:14.5,fontWeight:600,color:complete?C.faint:C.ink,textDecoration:complete?'line-through':'none',minWidth:0,letterSpacing:'-0.01em',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},d.title),
+          d.seq&&d.seq.length?h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:10.5,color:C.accent,background:C.soft,borderRadius:5,padding:'2px 6px',flex:'none'}},'악보 '+d.seq.length):null,
+          d.seq&&d.seq.length?h('button',{onClick:()=>this.strumSeq(d.seq),title:'악보 재생',style:{border:'1px solid '+C.border,background:'#fff',color:C.ink,cursor:'pointer',fontSize:11,borderRadius:6,padding:'3px 8px',flex:'none'}},'\u25b6'):null,
+          h('span',{style:{flex:1}}),
+          h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:13,fontWeight:700,color:complete?C.accent:C.muted,flex:'none'}},d.count+' / '+d.target),
+          h('div',{style:{display:'flex',alignItems:'center',gap:5,flex:'none'}},
+            h('button',{onClick:()=>this.bumpDrillTarget(d.id,-1),title:'목표 줄이기',style:this.stepBtn()},'\u2212'),
+            h('button',{onClick:()=>this.bumpDrillTarget(d.id,1),title:'목표 늘리기',style:this.stepBtn()},'+')),
+          h('button',{onClick:()=>this.removeDrill(d.id),title:'삭제',style:{border:'none',background:'none',color:C.faint,cursor:'pointer',fontSize:16,flex:'none',padding:'0 2px',lineHeight:1}},'\u00d7')),
+        h('div',{style:{display:'flex',flexWrap:'wrap',gap:7,paddingLeft:17}},circles));
+    };
+    const list = s.drills.length? s.drills.map(row) : h('div',{style:{padding:'26px 4px',color:C.faint,fontSize:13.5,textAlign:'center'}},'연습할 내용을 추가해보세요. 한 번 연습할 때마다 동그라미를 채우면 돼요.');
+    return h('div',{style:{border:'1px solid '+C.border,borderRadius:16,background:'#fcfbf7',padding:'18px 20px 10px'}},
+      h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,flexWrap:'wrap',marginBottom:4}},
+        h('div',{},
+          h('div',{style:{fontSize:15.5,fontWeight:680,letterSpacing:'-0.01em'}},'오늘 연습할 것'),
+          h('div',{style:{fontSize:12.5,color:C.faint,marginTop:3}},'한 번 연습할 때마다 동그라미를 하나씩 채우세요 · 오늘 '+done+'/'+s.drills.length+' 완료')),
+        h('button',{onClick:()=>this.resetDrills(),style:{padding:'6px 12px',fontSize:12.5,border:'1px solid '+C.border,borderRadius:7,background:'#fff',color:C.muted,cursor:'pointer',flex:'none'}},'체크 비우기')),
+      h('div',{},list),
+      s.sheets.length? h('div',{style:{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',padding:'14px 2px 2px'}},
+        h('span',{style:{fontSize:12.5,color:C.faint,flex:'none'}},'내 악보 담기:'),
+        s.sheets.map(sh=>h('button',{key:sh.id,onClick:()=>this.addDrillFromSheet(sh),style:{display:'flex',alignItems:'center',gap:6,padding:'5px 11px',fontSize:12.5,border:'1px solid '+C.border,borderRadius:20,background:'#fff',color:C.ink,cursor:'pointer'}},
+          h('span',{style:{color:C.accent,fontWeight:700}},'+'),sh.title,h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:10.5,color:C.faint}},sh.seq.length+'코드'))))
+        : h('div',{style:{padding:'13px 2px 2px',fontSize:12.5,color:C.faint}},'「악보 만들기」에서 악보를 저장하면 여기로 불러와 연습할 수 있어요.'),
+      h('div',{style:{display:'flex',gap:8,alignItems:'center',padding:'13px 2px 5px',flexWrap:'wrap'}},
+        h('input',{value:s.dTitle,onInput:e=>this.setState({dTitle:e.target.value}),onKeyDown:e=>{if(e.key==='Enter')this.addDrill();},placeholder:'연습할 내용 (예: F 바레코드 천천히)',style:{flex:'1 1 200px',padding:'9px 11px',fontSize:13.5,border:'1px solid '+C.border,borderRadius:8,outline:'none',background:'#fff',color:C.ink}}),
+        h('div',{style:{display:'flex',alignItems:'center',gap:6,flex:'none'}},
+          h('span',{style:{fontSize:12.5,color:C.faint}},'목표'),
+          h('button',{onClick:()=>this.setState({dTarget:Math.max(1,(Number(s.dTarget)||5)-1)}),style:this.stepBtn()},'\u2212'),
+          h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:14,fontWeight:700,minWidth:22,textAlign:'center'}},s.dTarget),
+          h('button',{onClick:()=>this.setState({dTarget:Math.min(40,(Number(s.dTarget)||5)+1)}),style:this.stepBtn()},'+'),
+          h('span',{style:{fontSize:12.5,color:C.faint}},'번')),
+        h('button',{onClick:()=>this.addDrill(),style:{padding:'9px 16px',fontSize:13.5,border:'none',borderRadius:8,background:C.ink,color:'#fff',cursor:'pointer',fontWeight:600,flex:'none'}},'추가')));
+  }
+
+  // ---------- stats ----------
+  stats(){ const g=this.state.grass; let total=0,days=0; Object.keys(g).forEach(k=>{ if(g[k]>0){total+=g[k];days++;} });
+    let streak=0; const t=new Date(); t.setHours(0,0,0,0); for(let i=0;i<400;i++){ const d=new Date(t); d.setDate(t.getDate()-i); if(g[this.dateStr(d)]>0) streak++; else if(i>0) break; else continue; }
+    let week=0; for(let i=0;i<7;i++){ const d=new Date(t); d.setDate(t.getDate()-i); week+=g[this.dateStr(d)]||0; }
+    return {total,days,streak,week};
+  }
+  level(c){ return c<=0?0:c<2?1:c<4?2:c<6?3:4; }
+  buildGrass(){ const today=new Date(); today.setHours(0,0,0,0); const weeks=[]; const start=new Date(today); start.setDate(today.getDate()-(52*7+today.getDay()));
+    let cur=new Date(start); while(cur<=today){ const w=[]; for(let d=0;d<7;d++){ if(cur>today){ w.push(null);} else { const ds=this.dateStr(cur); const c=this.state.grass[ds]||0; w.push({ds,count:c,level:this.level(c),date:new Date(cur)});} cur.setDate(cur.getDate()+1);} weeks.push(w);} return weeks; }
+  grassEl(cs){ const h=React.createElement; const weeks=this.buildGrass(); const gap=3; cs=cs||11;
+    const cols=weeks.map((w,wi)=>h('div',{key:wi,style:{display:'flex',flexDirection:'column',gap:gap}},w.map((c,di)=>h('div',{key:di,title:c?c.ds+' · '+c.count+'회':'',style:{width:cs,height:cs,borderRadius:2,background:c?this.GLEVELS[c.level]:'transparent'}}))));
+    return h('div',{style:{display:'flex',gap:gap,overflowX:'auto',paddingBottom:4}},cols);
+  }
+  legendEl(){ const h=React.createElement,C=this.colors(); return h('div',{style:{display:'flex',alignItems:'center',gap:5,fontSize:11,color:C.faint}},'적음',this.GLEVELS.map((c,i)=>h('div',{key:i,style:{width:11,height:11,borderRadius:2,background:c}})),'많음'); }
+
+  // ---------- card ----------
+  iconBtn(label,onClick){ const h=React.createElement,C=this.colors(); return h('button',{onClick,style:{flex:1,padding:'6px 4px',fontSize:11.5,color:C.muted,background:'#fff',border:'1px solid '+C.border,borderRadius:6,cursor:'pointer'}},label); }
+  svgIcon(name){ const h=React.createElement; const P={play:'M6 4l13 8-13 8z',bookmark:'M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z',copy:'M9 9h10v11H9z M5 15H4V4h11v1',grid:'M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z'}; const fill=name==='play'?'currentColor':'none'; return h('svg',{width:15,height:15,viewBox:'0 0 24 24',fill,stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'},h('path',{d:P[name]})); }
+  iconBtn2(name,onClick,title){ const h=React.createElement,C=this.colors(); return h('button',{onClick,title,style:{flex:1,padding:'7px 4px',display:'flex',alignItems:'center',justifyContent:'center',color:C.muted,background:'#fff',border:'1px solid '+C.border,borderRadius:6,cursor:'pointer'}},this.svgIcon(name)); }
+  chordCard(ch){ const h=React.createElement,C=this.colors(),w=this.cardW();
+    return h('div',{key:ch.key||ch.name,style:{border:'1px solid '+C.border,borderRadius:9,background:'#fff',padding:'11px 11px 10px',display:'flex',flexDirection:'column',alignItems:'center',gap:7}},
+      h('div',{onClick:()=>this.openDetail(ch),title:'클릭하면 모든 폼 보기',style:{cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:7,alignSelf:'stretch'}},
+        h('div',{style:{display:'flex',alignItems:'baseline',gap:6,alignSelf:'stretch',justifyContent:'center',minHeight:18}},
+          ch.roman?h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:10.5,color:C.faint}},ch.roman):null,
+          h('span',{style:{fontWeight:640,fontSize:15.5,color:C.ink,letterSpacing:'-0.01em'}},ch.name)),
+        this.diagramEl(ch.frets,w)),
+      h('div',{style:{display:'flex',gap:5,alignSelf:'stretch',marginTop:1}},
+        this.iconBtn2('play',()=>this.playChord(ch.frets),'재생'),
+        this.iconBtn2('bookmark',()=>this.addToCollected(ch),'담기'),
+        this.iconBtn2('copy',()=>this.copyChord(ch),'복사'),
+        this.iconBtn2('grid',()=>this.openDetail(ch),'모든 폼')));
+  }
+  gridWrap(cards){ const h=React.createElement; return h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax('+(this.cardW()+44)+'px,1fr))',gap:14}},cards); }
+
+  // ---------- chord grid view ----------
+  chordGrid(){ const h=React.createElement,C=this.colors(),s=this.state;
+    if(s.query.trim()){ const q=s.query.trim().toLowerCase().replace('\u266d','b').replace('\u266f','#'); const out=[]; for(let r=0;r<12;r++) for(const ql of this.QUALS){ const nm=(this.noteName(r)+(this.SUF[ql]||'')).toLowerCase().replace('\u266d','b').replace('\u266f','#'); if(nm.includes(q)) out.push(this.buildChord(r,ql)); }
+      if(!out.length) return h('div',{style:{color:C.faint,fontSize:14,padding:'40px 0',textAlign:'center'}},'"'+s.query+'" 와 일치하는 코드가 없어요');
+      return h('div',{},h('div',{style:{fontSize:13,color:C.faint,marginBottom:12}},'검색 결과 '+out.length+'개'),this.gridWrap(out.map(c=>this.chordCard(c))));
+    }
+    if(s.dictMode==='key'){ const chords=this.diatonic(s.selectedRoot,s.keyType); const kn=this.noteName(s.selectedRoot)+' '+(s.keyType==='major'?'Major':'Minor');
+      return h('div',{},
+        h('div',{style:{display:'flex',alignItems:'baseline',gap:10,marginBottom:14,flexWrap:'wrap'}},
+          h('span',{style:{fontSize:15,fontWeight:640}},kn+' 키의 다이어토닉 코드'),
+          h('span',{style:{fontSize:12.5,color:C.faint}},'이 스케일 안에서 자연스럽게 어울리는 7개 코드'),
+          h('button',{onClick:()=>this.strumSeq(chords),style:{marginLeft:'auto',padding:'6px 12px',fontSize:12.5,border:'1px solid '+C.border,borderRadius:7,background:'#fff',color:C.ink,cursor:'pointer'}},'▶ 전체 듣기')),
+        this.gridWrap(chords.map(c=>this.chordCard(c))));
+    }
+    const rn=this.noteName(s.selectedRoot);
+    return h('div',{}, this.QGROUPS.map(g=> h('div',{key:g.label,style:{marginBottom:28}},
+      h('div',{style:{display:'flex',alignItems:'baseline',gap:10,marginBottom:13}},
+        h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:12,letterSpacing:'0.6px',textTransform:'uppercase',color:C.faint}},g.label),
+        h('span',{style:{fontSize:12.5,color:C.faint}},rn+' 루트')),
+      this.gridWrap(g.quals.map(q=>this.chordCard(this.buildChord(s.selectedRoot,q)))))));
+  }
+
+  // ---------- scales view ----------
+  fretboardEl(root,type){ const h=React.createElement,C=this.colors(); const set=new Set(this.scaleNotes(root,type)); const open=[40,45,50,55,59,64];
+    const FR=12,W=640,H=158,ML=30,MT=16,MB=24; const fw=(W-ML-12)/FR, sh=(H-MT-MB)/5;
+    const fx=f=>ML+f*fw, syy=s=>MT+(5-s)*sh; const els=[];
+    for(let f=0;f<=FR;f++) els.push(h('line',{key:'v'+f,x1:fx(f),y1:MT,x2:fx(f),y2:H-MB,stroke:f===0?C.ink:C.border,strokeWidth:f===0?3:1}));
+    for(let s=0;s<6;s++) els.push(h('line',{key:'h'+s,x1:fx(0),y1:syy(s),x2:fx(FR),y2:syy(s),stroke:C.border,strokeWidth:1}));
+    [3,5,7,9,12].forEach(f=>els.push(h('text',{key:'l'+f,x:fx(f)-fw/2,y:H-6,fontSize:10,fill:C.faint,textAnchor:'middle',fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace'},f)));
+    for(let s=0;s<6;s++) for(let f=0;f<=FR;f++){ const pc=(open[s]+f)%12; if(set.has(pc)){ const isR=pc===root%12; const cx=f===0?fx(0)-13:fx(f)-fw/2, cy=syy(s); els.push(h('circle',{key:'c'+s+'_'+f,cx,cy,r:9,fill:isR?C.accent:'#fff',stroke:isR?C.accent:C.ink,strokeWidth:1.4})); els.push(h('text',{key:'t'+s+'_'+f,x:cx,y:cy+3.4,fontSize:8.5,fill:isR?'#fff':C.ink,textAnchor:'middle',fontWeight:600,fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace'},this.noteName(pc))); } }
+    return h('svg',{width:'100%',viewBox:'0 0 '+W+' '+H,style:{maxWidth:W,display:'block'}},els);
+  }
+  scaleView(){ const h=React.createElement,C=this.colors(),s=this.state; const notes=this.scaleNotes(s.selectedRoot,s.scaleType);
+    const name=this.noteName(s.selectedRoot)+' '+this.scaleLabels[s.scaleType];
+    return h('div',{style:{display:'flex',flexDirection:'column',gap:20}},
+      h('div',{style:{border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'18px 20px'}},
+        h('div',{style:{display:'flex',alignItems:'baseline',gap:12,marginBottom:16,flexWrap:'wrap'}},
+          h('span',{style:{fontSize:16,fontWeight:650}},name+' 스케일'),
+          h('span',{style:{fontSize:12.5,color:C.faint}},notes.length+'개 음 · 지판 전체 포지션')),
+        h('div',{style:{display:'flex',gap:7,flexWrap:'wrap',marginBottom:18}},notes.map((n,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:6,padding:'5px 11px',borderRadius:8,background:i===0?C.accent:C.panel,border:'1px solid '+(i===0?C.accent:C.border),color:i===0?'#fff':C.ink,fontSize:13,fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontWeight:600}},h('span',{style:{fontSize:10,opacity:.7}},i===0?'R':i+1),this.noteName(n)))),
+        this.fretboardEl(s.selectedRoot,s.scaleType)),
+      h('div',{style:{fontSize:12.5,color:C.faint,display:'flex',gap:16,flexWrap:'wrap'}},
+        h('span',{},h('span',{style:{display:'inline-block',width:11,height:11,borderRadius:'50%',background:C.accent,verticalAlign:'-1px',marginRight:5}}),'루트음'),
+        h('span',{},h('span',{style:{display:'inline-block',width:11,height:11,borderRadius:'50%',background:'#fff',border:'1.4px solid '+C.ink,verticalAlign:'-1px',marginRight:5}}),'스케일 구성음')));
+  }
+
+  // ---------- builder view ----------
+  builderView(){ const h=React.createElement,C=this.colors(),s=this.state;
+    const beats=this.beatsOf();
+    const measures=[]; for(let i=0;i<s.sequence.length;i+=beats) measures.push(s.sequence.slice(i,i+beats));
+    if(measures.length===0) measures.push(new Array(beats).fill(null));
+    const seg=(val,cur,on,label)=>h('button',{onClick:on,style:{padding:'5px 12px',fontSize:12.5,border:'none',borderRadius:50,cursor:'pointer',background:cur?C.ink:'transparent',color:cur?'#fff':C.ink,fontWeight:cur?540:480,boxShadow:'none'}},label);
+    const armed=s.armedChord;
+    const palette = s.collected.length? h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(96px,1fr))',gap:10}},
+        s.collected.map((c,i)=>{ const isArmed=armed&&armed.name===c.name&&JSON.stringify(armed.frets)===JSON.stringify(c.frets);
+          return h('div',{key:i,style:{position:'relative',border:'2px solid '+(isArmed?C.ink:C.border),borderRadius:9,background:isArmed?C.soft:'#fff',padding:'7px 6px 6px',display:'flex',flexDirection:'column',alignItems:'center',gap:4,cursor:'pointer'},onClick:()=>this.armChord(c)},
+            h('span',{style:{fontWeight:620,fontSize:13.5}},c.name),
+            this.diagramEl(c.frets,72),
+            h('button',{onClick:(e)=>{e.stopPropagation();this.removeCollected(i);},style:{position:'absolute',top:4,right:4,width:18,height:18,borderRadius:'50%',border:'none',background:C.panel,color:C.faint,fontSize:12,cursor:'pointer',lineHeight:1}},'\u00d7'),
+            h('span',{style:{fontSize:10,fontWeight:isArmed?700:400,color:isArmed?C.ink:C.accent}},isArmed?'\u2713 \uc120\ud0dd\ub428':'\uace0\ub974\uae30')); }))
+      : h('div',{style:{padding:'28px 18px',textAlign:'center',color:C.faint,fontSize:13,border:'1px dashed '+C.border,borderRadius:9}},'\uc544\uc9c1 \ub2f4\uc740 \ucf54\ub4dc\uac00 \uc5c6\uc5b4\uc694. ',h('button',{onClick:()=>this.setView('dictionary'),style:{border:'none',background:'none',color:C.accent,cursor:'pointer',fontSize:13,padding:0,textDecoration:'underline'}},'\ucf54\ub4dc \uc0ac\uc804'),' \uc5d0\uc11c \u300c\ub2f4\uae30\u300d\ub97c \ub20c\ub7ec\ubcf4\uc138\uc694.');
+
+    const hint = h('div',{style:{display:'flex',alignItems:'center',gap:8,padding:'9px 13px',borderRadius:9,background:armed?C.soft:C.panel,border:'1px solid '+(armed?C.ink:C.border),fontSize:12.5,color:C.ink,marginBottom:12}},
+      armed? h('span',{},h('b',{},armed.name),' \uc120\ud0dd\ub428 \u2014 \uc545\ubcf4\uc758 \ube48 \ubc15\uc744 \ud074\ub9ad\ud574 \ub123\uc73c\uc138\uc694. \ub2e4\uc2dc \ub204\ub974\uba74 \uc120\ud0dd \ud574\uc81c.')
+        : h('span',{style:{color:C.muted}},'\ub2f4\uc740 \ucf54\ub4dc\ub97c \ud558\ub098 \uace0\ub978 \ub4a4, \uc545\ubcf4\uc758 \uc6d0\ud558\ub294 \ubc15\uc744 \ud074\ub9ad\ud574 \ub123\uc73c\uc138\uc694.'));
+
+    const used=[]; { const seen=new Set(); s.sequence.forEach(c=>{ if(c&&!seen.has(c.name)){ seen.add(c.name); used.push(c);} }); }
+    const chordBox = used.length? h('div',{style:{border:'1.5px solid '+C.ink,borderRadius:14,padding:'18px 16px 14px',marginBottom:22}},
+        h('div',{style:{display:'flex',flexWrap:'wrap',gap:18,justifyContent:'center'}},
+          used.map((c,i)=>h('div',{key:i,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:4,width:78}},
+            h('span',{style:{fontWeight:700,fontSize:15,color:C.ink,letterSpacing:'-0.01em'}},c.name),
+            this.diagramEl(c.frets,72))))) : null;
+
+    const beatCell=(c,gi,ci)=>h('div',{key:ci,onClick:()=>{ if(armed) this.placeAt(gi); else if(c) this.clearSlot(gi); else this.toast('\uc544\ub798 \ub2f4\uc740 \ucf54\ub4dc\ub97c \uba3c\uc800 \uc120\ud0dd\ud558\uc138\uc694'); },
+        title: c? (armed?'\ud074\ub9ad\ud574\uc11c \uad50\uccb4':'\ud074\ub9ad\ud574\uc11c \ube44\uc6b0\uae30') : '\ud074\ub9ad\ud574\uc11c \ucf54\ub4dc \ub123\uae30',
+        style:{position:'relative',minHeight:34,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',borderLeft:(ci===0?'2px solid '+C.ink:'1px solid '+C.line)}},
+        c? h('span',{style:{fontWeight:700,fontSize:18,color:C.ink,letterSpacing:'-0.01em'}},c.name)
+         : h('span',{style:{fontSize:13,color:armed?C.ink:'#d3d2cd'}},armed?'+':'\u00b7'));
+
+    const chartCell=(m,mi)=>h('div',{key:mi,style:{display:'flex',flexDirection:'column'}},
+      h('div',{style:{display:'grid',gridTemplateColumns:'repeat('+beats+',1fr)',borderBottom:'2px solid '+C.ink}},
+        m.map((c,ci)=>beatCell(c,mi*beats+ci,ci))),
+      h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'3px 2px 0',minHeight:18}},
+        h('span',{style:{fontSize:10,color:C.faint,fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',letterSpacing:'0.4px'}},(mi+1)),
+        measures.length>1?h('button',{onClick:()=>this.removeMeasure(mi),title:'\ub9c8\ub514 \uc0ad\uc81c',style:{border:'none',background:'none',color:C.faint,cursor:'pointer',fontSize:11,padding:0}},'\u00d7'):null));
+
+    const sheet = h('div',{style:{border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'20px 22px'}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:16,flexWrap:'wrap'}},
+        h('input',{value:s.sheetTitle,onInput:e=>this.setState({sheetTitle:e.target.value}),placeholder:'\uc545\ubcf4 \uc81c\ubaa9',style:{flex:'1 1 180px',fontSize:16,fontWeight:600,border:'none',borderBottom:'1.5px solid '+C.line,padding:'4px 2px',outline:'none',color:C.ink}}),
+        h('div',{style:{display:'inline-flex',background:'#f7f7f5',borderRadius:50,padding:4,gap:2}},['4/4','3/4','6/8'].map(t=>seg(t,s.timeSig===t,()=>this.setTimeSig(t),t))),
+        h('button',{onClick:()=>s.sequence.some(Boolean)&&this.strumSeq(s.sequence),style:{padding:'7px 13px',fontSize:13,border:'1px solid '+C.border,borderRadius:8,background:'#fff',color:C.ink,cursor:'pointer',whiteSpace:'nowrap'}},'\u25b6 \uc7ac\uc0dd'),
+        h('button',{onClick:()=>this.clearSeq(),style:{padding:'7px 13px',fontSize:13,border:'1px solid '+C.border,borderRadius:8,background:'#fff',color:C.muted,cursor:'pointer',whiteSpace:'nowrap'}},'\ube44\uc6b0\uae30'),
+        h('button',{onClick:()=>this.saveSheet(),style:{padding:'7px 15px',fontSize:13,border:'none',borderRadius:8,background:C.accent,color:'#fff',cursor:'pointer',fontWeight:600,whiteSpace:'nowrap'}},'\uc800\uc7a5')),
+      hint,
+      h('div',{style:{textAlign:'center',padding:'8px 0 22px'}},
+        h('div',{style:{fontSize:30,fontWeight:800,letterSpacing:'-0.6px',color:C.ink}},s.sheetTitle||'\ubb34\uc81c \uc545\ubcf4'),
+        h('div',{style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:12,letterSpacing:'0.6px',color:C.faint,marginTop:6}},s.timeSig+' \u00b7 '+s.sequence.filter(Boolean).length+' CHORDS')),
+      chordBox,
+      h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',columnGap:0,rowGap:22,borderRight:'2px solid '+C.ink}},
+        measures.map((m,mi)=>chartCell(m,mi))),
+      h('div',{style:{display:'flex',justifyContent:'center',marginTop:20}},
+        h('button',{onClick:()=>this.addMeasure(),style:{padding:'8px 18px',fontSize:13,fontWeight:480,border:'1px solid '+C.border,borderRadius:50,background:'#fff',color:C.ink,cursor:'pointer'}},'+ \ub9c8\ub514 \ucd94\uac00')));
+
+    const saved = s.sheets.length? h('div',{style:{border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'16px 18px'}},
+      h('div',{style:{fontSize:13,fontWeight:640,marginBottom:12,color:C.muted}},'\uc800\uc7a5\ub41c \uc545\ubcf4 '+s.sheets.length),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:8}},s.sheets.map(sh=>h('div',{key:sh.id,style:{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',border:'1px solid '+C.line,borderRadius:8}},
+        h('div',{style:{flex:1,minWidth:0}},h('div',{style:{fontSize:14,fontWeight:600}},sh.title),h('div',{style:{fontSize:11.5,color:C.faint,marginTop:2}},sh.timeSig+' \u00b7 '+sh.seq.filter(Boolean).length+'\ucf54\ub4dc \u00b7 '+sh.date)),
+        h('button',{onClick:()=>this.loadSheet(sh),style:{padding:'5px 11px',fontSize:12,border:'1px solid '+C.border,borderRadius:7,background:'#fff',cursor:'pointer',color:C.ink}},'\ubd88\ub7ec\uc624\uae30'),
+        h('button',{onClick:()=>this.deleteSheet(sh.id),style:{padding:'5px 9px',fontSize:12,border:'1px solid '+C.border,borderRadius:7,background:'#fff',cursor:'pointer',color:C.faint}},'\uc0ad\uc81c'))))) : null;
+
+    return h('div',{style:{display:'grid',gridTemplateColumns:'minmax(0,1fr)',gap:20,maxWidth:1000}},
+      sheet,
+      h('div',{},h('div',{style:{fontSize:13,fontWeight:640,marginBottom:11,color:C.muted}},'\ub2f4\uc740 \ucf54\ub4dc \u00b7 \ud074\ub9ad\ud574\uc11c \uc120\ud0dd'),palette),
+      saved);
+  }
+
+  // ---------- practice view ----------
+  practiceView(){ const h=React.createElement,C=this.colors(),s=this.state,st=this.stats();
+    const stat=(n,l)=>h('div',{style:{flex:1,border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'16px 18px'}},h('div',{style:{fontSize:26,fontWeight:700,letterSpacing:'-0.02em'}},n),h('div',{style:{fontSize:12.5,color:C.faint,marginTop:3}},l));
+    const input=(v,on,ph,extra)=>h('input',{value:v,onInput:on,placeholder:ph,style:Object.assign({width:'100%',padding:'9px 11px',fontSize:13.5,border:'1px solid '+C.border,borderRadius:8,outline:'none',background:C.panel,color:C.ink},extra||{})});
+    return h('div',{style:{display:'flex',flexDirection:'column',gap:20,maxWidth:1000}},
+      h('div',{style:{display:'flex',gap:14,flexWrap:'wrap'}},stat(st.streak+'일',' 연속 연습 중'),stat(st.days+'일',' 총 연습한 날'),stat(st.week+'회',' 이번 주 세션'),stat(st.total+'회',' 누적 세션')),
+      this.drillsView(),
+      h('div',{style:{border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'18px 20px'}},
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16,flexWrap:'wrap',gap:10}},
+          h('div',{style:{fontSize:14,fontWeight:640,whiteSpace:'nowrap'}},'연습 잔디 · 최근 1년'),
+          h('button',{onClick:()=>this.logPractice(),style:{padding:'7px 13px',fontSize:13,border:'none',borderRadius:8,background:C.accent,color:'#fff',cursor:'pointer',fontWeight:600}},'＋ 오늘 연습 기록')),
+        this.grassEl(11),
+        h('div',{style:{marginTop:10}},this.legendEl())),
+      h('div',{style:{border:'1px solid '+C.border,borderRadius:16,background:C.panel,padding:'18px 20px'}},
+        h('div',{style:{fontSize:14,fontWeight:640,marginBottom:14}},'연습 일지 쓰기'),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
+          h('div',{style:{display:'flex',gap:10,flexWrap:'wrap'}},
+            h('div',{style:{flex:'2 1 220px'}},input(s.jTitle,e=>this.setState({jTitle:e.target.value}),'오늘 무엇을 연습했나요?',{fontWeight:600})),
+            h('div',{style:{flex:'1 1 110px',position:'relative'}},input(s.jMin,e=>this.setState({jMin:e.target.value}),'분',{paddingRight:34}),h('span',{style:{position:'absolute',right:11,top:9,fontSize:12.5,color:C.faint}},'분'))),
+          input(s.jChords,e=>this.setState({jChords:e.target.value}),'연습한 코드 (예: C G Am F)'),
+          h('textarea',{value:s.jNotes,onInput:e=>this.setState({jNotes:e.target.value}),placeholder:'느낀 점, 어려웠던 부분, 다음 목표...',rows:3,style:{width:'100%',padding:'9px 11px',fontSize:13.5,border:'1px solid '+C.border,borderRadius:8,outline:'none',resize:'vertical',background:'#fff',color:C.ink,lineHeight:1.5}}),
+          h('button',{onClick:()=>this.addJournal(),style:{alignSelf:'flex-start',padding:'9px 18px',fontSize:13.5,border:'none',borderRadius:8,background:C.ink,color:'#fff',cursor:'pointer',fontWeight:600}},'일지 기록 + 잔디 심기'))),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
+        h('div',{style:{fontSize:13,fontWeight:640,color:C.muted}},'기록 ('+s.journal.length+')'),
+        s.journal.map(j=>this.journalCard(j)))
+    );
+  }
+  journalCard(j){ const h=React.createElement,C=this.colors();
+    return h('div',{key:j.id,style:{border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'15px 18px'}},
+      h('div',{style:{display:'flex',alignItems:'baseline',gap:10,marginBottom:j.notes?8:6,flexWrap:'wrap'}},
+        h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:11.5,color:C.faint}},j.date),
+        h('span',{style:{fontSize:15,fontWeight:640}},j.title),
+        h('span',{style:{marginLeft:'auto',fontSize:11.5,color:C.muted,background:C.panel,border:'1px solid '+C.border,borderRadius:20,padding:'2px 9px'}},j.minutes+'분')),
+      j.chords&&j.chords.length? h('div',{style:{display:'flex',gap:5,flexWrap:'wrap',marginBottom:j.notes?10:0}},j.chords.map((c,i)=>h('span',{key:i,style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:11.5,fontWeight:600,color:C.accent,background:C.soft,borderRadius:6,padding:'2px 8px'}},c))):null,
+      j.notes? h('div',{style:{fontSize:13.5,color:'#5a584f',lineHeight:1.6}},j.notes):null);
+  }
+
+  // ---------- lesson view ----------
+  addLesson(){ const s=this.state; if(!s.lTitle.trim()&&!s.lTeacher.trim()){ this.toast(this.L('배운 내용을 입력하세요','Enter what you learned')); return; } const entry={id:'l'+Date.now(),date:this.dateStr(new Date()),teacher:s.lTeacher.trim(),title:s.lTitle.trim()||this.L('레슨','Lesson'),minutes:Number(s.lMin)||0,homework:s.lHomework.trim(),notes:s.lNotes.trim()}; const lessons=[entry,...s.lessons]; this.setState({lessons,lTeacher:'',lTitle:'',lMin:30,lHomework:'',lNotes:''}); this.save({lessons}); this.toast(this.L('레슨을 기록했어요','Lesson saved')); }
+  deleteLesson(id){ const lessons=this.state.lessons.filter(l=>l.id!==id); this.setState({lessons}); this.save({lessons}); }
+  homeworkToDrills(l){ const lines=(l.homework||'').split(/\n/).map(x=>x.trim()).filter(Boolean); if(!lines.length){ this.toast(this.L('숙제 내용이 없어요','No homework to add')); return; } let added=0; let drills=this.state.drills.slice(); lines.forEach(t=>{ if(!drills.some(d=>d.title===t)){ drills.push({id:'d'+Date.now()+Math.random().toString(36).slice(2,5),title:t,target:5,count:0}); added++; } }); this.setState({drills}); this.save({drills}); this.toast(added?this.L(added+'개를 연습 목록에 담았어요','Added '+added+' to drills'):this.L('이미 모두 담겨 있어요','All already added')); }
+  lessonsView(){ const h=React.createElement,C=this.colors(),s=this.state;
+    const fl=(t)=>h('div',{style:{fontFamily:'"JetBrains Mono","D2Coding",monospace',fontSize:12,letterSpacing:'0.6px',textTransform:'uppercase',color:'#000',marginBottom:7}},t);
+    const inp=(v,on,ph,extra)=>h('input',{value:v,onInput:on,placeholder:ph,style:Object.assign({width:'100%',padding:'12px 14px',fontSize:18,fontWeight:320,letterSpacing:'-0.26px',border:'1px solid '+C.border,borderRadius:8,outline:'none',background:'#fff',color:'#000'},extra||{})});
+    const ta=(v,on,ph)=>h('textarea',{value:v,onInput:on,placeholder:ph,rows:3,style:{width:'100%',padding:'12px 14px',fontSize:18,fontWeight:320,letterSpacing:'-0.26px',border:'1px solid '+C.border,borderRadius:8,outline:'none',background:'#fff',color:'#000',resize:'vertical',lineHeight:1.45,fontFamily:'inherit'}});
+    const form=h('div',{style:{background:'#fff',border:'1px solid '+C.border,borderRadius:24,padding:'26px 28px',marginBottom:28}},
+      h('h2',{style:{fontSize:24,fontWeight:700,margin:'0 0 18px'}},'새 레슨 기록'),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:16}},
+        h('div',{style:{display:'flex',gap:16,flexWrap:'wrap'}},
+          h('div',{style:{flex:'2 1 220px'}},fl('선생님 · TEACHER'),inp(s.lTeacher,e=>this.setState({lTeacher:e.target.value}),'예: 김선생')),
+          h('div',{style:{flex:'1 1 120px'}},fl('시간 · MIN'),inp(s.lMin,e=>this.setState({lMin:e.target.value}),'분'))),
+        h('div',{},fl('오늘 배운 것 · TOPIC'),inp(s.lTitle,e=>this.setState({lTitle:e.target.value}),'예: 바레코드와 8비트 스트로크',{fontWeight:540,fontSize:20})),
+        h('div',{},fl('이번 주 숙제 · HOMEWORK'),ta(s.lHomework,e=>this.setState({lHomework:e.target.value}),'한 줄에 하나씩 적으면 연습 목록으로 담을 수 있어요')),
+        h('div',{},fl('메모 · NOTES'),ta(s.lNotes,e=>this.setState({lNotes:e.target.value}),'레슨에서 받은 피드백, 다음 목표...')),
+        h('button',{onClick:()=>this.addLesson(),style:{alignSelf:'flex-start',padding:'10px 24px',fontSize:20,fontWeight:480,letterSpacing:'-0.1px',border:'none',borderRadius:50,background:'#000',color:'#fff',cursor:'pointer'}},'레슨 기록하기')));
+    const list = s.lessons.length? s.lessons.map(l=>this.lessonCard(l)) : [h('div',{key:'e',style:{background:'#fff',border:'1px solid '+C.border,borderRadius:24,padding:'48px 24px',textAlign:'center',fontSize:18,fontWeight:330}},'아직 레슨 기록이 없어요. 위에서 첫 레슨을 기록해보세요.')];
+    return h('div',{style:{maxWidth:760}},
+      form,
+      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:18}},
+        h('h2',{style:{fontSize:26,fontWeight:540,letterSpacing:'-0.26px',margin:0}},'레슨 히스토리'),
+        h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",monospace',fontSize:12,letterSpacing:'0.6px',color:'#000'}},'('+s.lessons.length+')')),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:14}},list));
+  }
+  lessonCard(l){ const h=React.createElement,C=this.colors();
+    const hw=(l.homework||'').split(/\n/).map(x=>x.trim()).filter(Boolean);
+    return h('div',{key:l.id,style:{background:'#fff',border:'1px solid '+C.border,borderRadius:24,padding:'24px 26px'}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',marginBottom:12}},
+        h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",monospace',fontSize:12,letterSpacing:'0.6px',color:'#000'}},l.date),
+        l.teacher?h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",monospace',fontSize:12,letterSpacing:'0.6px',textTransform:'uppercase',color:'#000',background:'#e4d8f8',borderRadius:6,padding:'3px 9px'}},'🎓 '+l.teacher):null,
+        h('span',{style:{marginLeft:'auto',fontFamily:'"JetBrains Mono","D2Coding",monospace',fontSize:12,color:'#000',border:'1px solid '+C.border,borderRadius:50,padding:'4px 12px'}},l.minutes+'분'),
+        h('button',{onClick:()=>this.deleteLesson(l.id),title:'삭제',style:{width:34,height:34,borderRadius:9999,border:'none',background:C.panel,color:'#000',cursor:'pointer',fontSize:17,lineHeight:1,flex:'none'}},'\u00d7')),
+      h('div',{style:{fontSize:24,fontWeight:700,lineHeight:1.3,marginBottom:(hw.length||l.notes)?14:0}},l.title),
+      hw.length?h('div',{style:{background:'#f7f1e2',borderRadius:16,padding:'16px 18px',marginBottom:l.notes?12:0}},
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,marginBottom:10,flexWrap:'wrap'}},
+          h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",monospace',fontSize:12,letterSpacing:'0.6px',textTransform:'uppercase'}},'📝 이번 주 숙제'),
+          h('button',{onClick:()=>this.homeworkToDrills(l),style:{padding:'6px 14px',fontSize:14,fontWeight:480,border:'none',borderRadius:50,background:'#000',color:'#fff',cursor:'pointer'}},'연습 목록에 담기')),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:6}},hw.map((x,i)=>h('div',{key:i,style:{fontSize:18,fontWeight:330,display:'flex',gap:8}},h('span',{},'•'),h('span',{},x))))):null,
+      l.notes?h('div',{style:{fontSize:18,fontWeight:330,lineHeight:1.5,color:'#000',whiteSpace:'pre-wrap'}},l.notes):null);
+  }
+
+  // ---------- home view ----------
+  homeView(){ const h=React.createElement,C=this.colors(),s=this.state,st=this.stats();
+    const layout=s.homeLayout||this.props.homeLayout||'focus';
+    const suggested=['C|maj','G|maj','A|min','F|maj','D|min','E|min'].map(k=>{const[r,q]=k.split('|');return this.buildChord(this.NOTE.indexOf(r),q);});
+    const recent=s.journal.slice(0,3);
+    const grassCard=(cs)=>h('div',{style:{border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'18px 20px'}},
+      h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14,flexWrap:'wrap',gap:8}},h('div',{style:{fontSize:13.5,fontWeight:640,whiteSpace:'nowrap'}},'연습 잔디'),h('div',{style:{fontSize:12,color:C.faint}},st.total+'회 누적')),
+      this.grassEl(cs),h('div',{style:{marginTop:9}},this.legendEl()));
+    const recentList=h('div',{style:{display:'flex',flexDirection:'column',gap:9}},recent.length?recent.map(j=>h('div',{key:j.id,style:{display:'flex',gap:10,alignItems:'baseline'}},h('span',{style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:11,color:C.faint,flex:'none'}},j.date.slice(5)),h('span',{style:{fontSize:13.5,color:C.ink,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},j.title))):h('span',{style:{fontSize:13,color:C.faint}},'아직 일지가 없어요'));
+    const suggestRow=h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(118px,1fr))',gap:12}},suggested.map(c=>h('div',{key:c.name,style:{border:'1px solid '+C.border,borderRadius:10,background:'#fff',padding:'10px 8px 8px',display:'flex',flexDirection:'column',alignItems:'center',gap:5}},h('span',{style:{fontWeight:620,fontSize:14}},c.name),this.diagramEl(c.frets,82),h('button',{onClick:()=>this.playChord(c.frets),style:{fontSize:11,color:C.muted,background:C.panel,border:'1px solid '+C.border,borderRadius:6,padding:'3px 10px',cursor:'pointer'}},'▶ 듣기'))));
+
+    if(layout==='focus'){
+      return h('div',{style:{display:'flex',flexDirection:'column',gap:24,maxWidth:920}},
+        h('div',{style:{display:'flex',gap:18,flexWrap:'wrap',alignItems:'stretch'}},
+          h('div',{style:{flex:'1 1 280px',background:'#e8f2d2',color:'#000',borderRadius:24,padding:'30px 32px',display:'flex',flexDirection:'column',justifyContent:'space-between',minHeight:172}},
+            h('div',{},h('div',{style:{fontFamily:'"JetBrains Mono","D2Coding",monospace',fontSize:12,letterSpacing:'0.6px',textTransform:'uppercase',opacity:.6}},'🔥 STREAK'),h('div',{style:{fontSize:56,fontWeight:340,letterSpacing:'-1.4px',lineHeight:1.0,marginTop:8}},st.streak,h('span',{style:{fontSize:22,fontWeight:330,opacity:.6,marginLeft:8}},'일째')) ),
+            h('button',{onClick:()=>this.logPractice(),style:{alignSelf:'flex-start',marginTop:18,padding:'10px 22px',fontSize:16,fontWeight:480,letterSpacing:'-0.1px',border:'none',borderRadius:50,background:'#000',color:'#fff',cursor:'pointer',whiteSpace:'nowrap'}},'오늘 연습 기록하기')),
+          grassCard(11)),
+        h('div',{},h('div',{style:{fontSize:14,fontWeight:640,marginBottom:13}},'오늘의 추천 코드'),suggestRow));
+    }
+    if(layout==='board'){
+      const card=(title,body,span)=>h('div',{style:{gridColumn:span?'1 / -1':'auto',border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'18px 20px'}},h('div',{style:{fontSize:13.5,fontWeight:640,marginBottom:13}},title),body);
+      return h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:16,maxWidth:1000}},
+        card('연습 잔디',h('div',{},this.grassEl(10),h('div',{style:{marginTop:9}},this.legendEl())),true),
+        h('div',{style:{border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'18px 20px',display:'flex',flexDirection:'column',justifyContent:'center'}},h('div',{style:{fontSize:13,color:C.faint,marginBottom:4}},'연속 연습'),h('div',{style:{fontSize:38,fontWeight:720,letterSpacing:'-0.02em'}},st.streak+'일'),h('button',{onClick:()=>this.logPractice(),style:{marginTop:14,padding:'9px 14px',fontSize:13,fontWeight:600,border:'none',borderRadius:8,background:C.accent,color:'#fff',cursor:'pointer'}},'＋ 오늘 기록')),
+        card('최근 일지',recentList),
+        card('담은 코드 ('+s.collected.length+')',h('div',{},h('div',{style:{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}},s.collected.slice(0,8).map((c,i)=>h('span',{key:i,style:{fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',fontSize:12.5,fontWeight:600,background:C.soft,color:C.ink,borderRadius:7,padding:'4px 10px'}},c.name))),h('button',{onClick:()=>this.setView('builder'),style:{fontSize:12.5,border:'1px solid '+C.border,borderRadius:7,background:'#fff',padding:'7px 13px',cursor:'pointer',color:C.ink}},'악보 만들기 →'))));
+    }
+    // minimal
+    return h('div',{style:{maxWidth:580,margin:'0 auto',display:'flex',flexDirection:'column',gap:22}},
+      h('div',{style:{textAlign:'center'}},h('div',{style:{fontSize:13,color:C.faint}},'연속 연습'),h('div',{style:{fontSize:40,fontWeight:720,letterSpacing:'-0.02em'}},st.streak+'일'),h('button',{onClick:()=>this.logPractice(),style:{marginTop:12,padding:'10px 18px',fontSize:13.5,fontWeight:600,border:'none',borderRadius:9,background:C.accent,color:'#fff',cursor:'pointer'}},'＋ 오늘 연습 기록')),
+      h('div',{style:{border:'1px solid '+C.border,borderRadius:16,background:'#fff',padding:'16px 18px'}},this.grassEl(9),h('div',{style:{marginTop:9}},this.legendEl())),
+      h('div',{},h('div',{style:{fontSize:13,fontWeight:640,marginBottom:11,color:C.muted}},'최근 일지'),recentList));
+  }
+
+  // ---------- segmented styles ----------
+  seg(active){ const C=this.colors(); return {padding:'8px 16px',fontSize:14,border:'none',borderRadius:50,cursor:'pointer',background:active?C.ink:'transparent',color:active?'#fff':C.ink,fontWeight:active?540:480,letterSpacing:'-0.1px',boxShadow:'none',whiteSpace:'nowrap',transition:'all .12s'}; }
+  pill(active){ const C=this.colors(); return {minWidth:40,padding:'8px 0',fontSize:14,fontWeight:active?540:480,border:'1px solid '+(active?C.ink:C.border),borderRadius:50,cursor:'pointer',background:active?C.ink:'#fff',color:active?'#fff':C.ink,fontFamily:'"JetBrains Mono","D2Coding",ui-monospace,monospace',transition:'all .12s'}; }
+  langBtnStyle(active){ const C=this.colors(); return {flex:1,padding:'6px 0',fontSize:11,fontWeight:active?700:500,letterSpacing:'0.5px',border:'1px solid '+(active?C.ink:C.border),borderRadius:7,cursor:'pointer',background:active?C.ink:'#fff',color:active?'#fff':C.muted,fontFamily:'"JetBrains Mono",ui-monospace,monospace'}; }
+
+  renderVals(){
+    const s=this.state, C=this.colors();
+    const st=this.stats();
+    const navDefs=[
+      {key:'home',label:this.L('홈','Home'),icon:'M3 9.5 12 3l9 6.5V21H3z'},
+      {key:'dictionary',label:this.L('코드 사전','Chords'),icon:'M5 4h12a2 2 0 0 1 2 2v15H7a2 2 0 0 1-2-2zM5 4v13'},
+      {key:'scales',label:this.L('스케일','Scales'),icon:'M4 7h16M4 12h16M4 17h16'},
+      {key:'builder',label:this.L('악보 만들기','Sheet'),icon:'M9 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0zM9 18V5l11-2v11M20 14a3 3 0 1 0-6 0 3 3 0 0 0 6 0z'},
+      {key:'practice',label:this.L('연습 기록','Practice'),icon:'M4 5h16v16H4zM4 9h16M9 3v4M15 3v4M8 14h2M14 14h2'},
+      {key:'lesson',label:this.L('레슨 기록','Lessons'),icon:'M22 10 12 5 2 10l10 5 10-5zM6 12v5c0 2 3 3 6 3s6-1 6-3v-5'}
+    ];
+    const navItems=navDefs.map(n=>{ const a=s.view===n.key; return {label:n.label,iconPath:n.icon,iconColor:a?'#fff':C.faint,onClick:()=>this.setView(n.key),
+      style:{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:8,border:'none',cursor:'pointer',fontSize:14,textAlign:'left',width:'100%',background:a?C.ink:'transparent',color:a?'#fff':C.ink,fontWeight:a?540:480}}; });
+
+    const titles=this.lang()==='en'?{home:['Home','Welcome back — ready to practice today?','🏠 OVERVIEW'],dictionary:['Chord Dictionary','Find, hear and collect chord diagrams by key and root','📖 CHORD LIBRARY'],scales:['Scales','Learn scale tones across the fretboard','🎼 SCALES'],builder:['Sheet Builder','Arrange your saved chords into your own progression','🎵 SHEET BUILDER'],practice:['Practice Log','Track drills, check them off, and build your streak','✅ PRACTICE LOG'],lesson:['Lesson Log','Log what you learned and turn homework into practice','🎓 LESSON LOG']}:{home:['홈','다시 만나서 반가워요. 오늘도 한 곡 연습해볼까요?','🏠 OVERVIEW'],dictionary:['코드 사전','키와 루트별로 코드 다이어그램을 찾고, 듣고, 모아보세요','📖 CHORD LIBRARY'],scales:['스케일','지판 위에서 스케일 구성음을 익혀보세요','🎼 SCALES'],builder:['악보 만들기','담은 코드를 마디에 배치해 나만의 코드 진행을 만드세요','🎵 SHEET BUILDER'],practice:['연습 기록','연습할 것을 적고 한 번씩 체크하며, 잔디로 꾸준함을 쌓으세요','✅ PRACTICE LOG'],lesson:['레슨 기록','선생님께 배운 내용과 숙제를 기록하고 연습으로 이어가세요','🎓 LESSON LOG']};
+
+    const homeLayoutDefs=[['focus',this.L('포커스','Focus')],['board',this.L('대시보드','Board')],['minimal',this.L('미니멀','Minimal')]];
+    const curLayout=s.homeLayout||this.props.homeLayout||'focus';
+
+    return {
+      navItems, weekCount:st.week, streak:st.streak, accent:C.accent,
+      thisWeekLabel:this.L('이번 주 · THIS WEEK','THIS WEEK'),
+      weekMeta:this.L('회 · '+st.streak+'일 연속', (st.week===1?'session':'sessions')+' · '+st.streak+'-day streak'),
+      streakChip:this.L(st.streak+'일 연속', st.streak+'-day streak'),
+      headerLogBtn:this.L('오늘 연습 기록','Log practice'),
+      searchPlaceholder:this.L('코드 검색 (예: Am7, F)','Search chords (e.g. Am7, F)'),
+      langKo:{onClick:()=>this.setLang('ko'),style:this.langBtnStyle(this.lang()==='ko')},
+      langEn:{onClick:()=>this.setLang('en'),style:this.langBtnStyle(this.lang()==='en')},
+      primaryBtnStyle:{padding:'9px 18px',fontSize:15,fontWeight:480,letterSpacing:'-0.1px',border:'none',borderRadius:50,background:C.ink,color:'#fff',cursor:'pointer',whiteSpace:'nowrap'},
+      logPractice:()=>this.logPractice(),
+      viewTitle:titles[s.view][0], viewSubtitle:titles[s.view][1], viewEyebrow:titles[s.view][2],
+      isHome:s.view==='home', isDict:s.view==='dictionary', isScales:s.view==='scales', isBuilder:s.view==='builder', isPractice:s.view==='practice', isLesson:s.view==='lesson',
+      homeLayouts:homeLayoutDefs.map(([k,l])=>({label:l,onClick:()=>this.setState({homeLayout:k}),style:this.seg(curLayout===k)})),
+      homeView:this.homeView(),
+      dictModes:[['key',this.L('키별 코드','By key')],['root',this.L('루트별 코드','By root')]].map(([k,l])=>({label:l,onClick:()=>this.setState({dictMode:k}),style:this.seg(s.dictMode===k)})),
+      isKeyMode:s.dictMode==='key',
+      keyTypeTabs:[['major','Major'],['minor','Minor']].map(([k,l])=>({label:l,onClick:()=>this.setState({keyType:k}),style:this.seg(s.keyType===k)})),
+      query:s.query, onSearch:e=>this.setState({query:e.target.value}),
+      rootButtons:this.NOTE.map((n,i)=>({name:n,onClick:()=>this.setState({selectedRoot:i}),style:this.pill(s.selectedRoot===i)})),
+      chordGrid:this.chordGrid(),
+      scaleTabs:Object.keys(this.scaleLabels).map(k=>({label:this.scaleLabel(k),onClick:()=>this.setState({scaleType:k}),style:this.seg(s.scaleType===k)})),
+      scaleView:this.scaleView(),
+      builderView:this.builderView(),
+      practiceView:this.practiceView(),
+      lessonView:this.lessonsView(),
+      isDetail:!!s.detailChord, detailView:this.detailView(),
+      toast:s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

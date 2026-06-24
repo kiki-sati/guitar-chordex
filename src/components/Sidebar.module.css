@@ -1,0 +1,78 @@
+.sidebar {
+  width: 248px;
+  flex: none;
+  height: 100vh;
+  background: #fff;
+  border-right: 1px solid var(--c-border);
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 8px 18px;
+}
+.brandText {
+  font-weight: 540;
+  font-size: 18px;
+  letter-spacing: -0.4px;
+}
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.navBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--r-md);
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  color: var(--c-ink);
+  font-weight: 480;
+}
+.navActive {
+  background: var(--c-ink);
+  color: #fff;
+  font-weight: 540;
+}
+.navDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.foot {
+  margin-top: auto;
+  padding: 14px 8px 2px;
+  border-top: 1px solid var(--c-border);
+}
+.weekLabel {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: #000;
+  margin-bottom: 8px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.weekRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.weekCount {
+  font-size: 30px;
+  font-weight: 340;
+  letter-spacing: -0.8px;
+}
+.weekMeta {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: #000;
+}

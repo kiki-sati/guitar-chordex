@@ -1,0 +1,60 @@
+.head {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--c-border);
+}
+.titleWrap {
+  min-width: 0;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #000;
+  margin-bottom: 6px;
+}
+.title {
+  font-size: 26px;
+  font-weight: 540;
+  letter-spacing: -0.4px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-pill);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: #000;
+  white-space: nowrap;
+  flex: none;
+}
+.logBtn {
+  padding: 9px 18px;
+  font-size: 15px;
+  font-weight: 480;
+  letter-spacing: -0.1px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--c-ink);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
