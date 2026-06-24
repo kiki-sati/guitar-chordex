@@ -46,36 +46,16 @@
 
 ## 2. PR 흐름도 (PR flow)
 
-```
-  개발자가 feature 브랜치 push → main 대상 PR 생성/갱신
-            │
-            ├──────────────────────────────┬───────────────────────────────┐
-            ▼                               ▼                               │
-  ┌───────────────────┐          ┌────────────────────────┐                │
-  │ (A) ci.yml        │          │ (B) claude-review.yml   │                │
-  │ contents: read    │          │ contents: read          │                │
-  │                   │          │ pull-requests: write    │                │
-  │ checkout (v6)     │          │ checkout (base ref만)   │                │
-  │ setup-node 20     │          │ claude-code-action@v1   │                │
-  │ npm ci            │          │  - prompt(자동 모드)    │                │
-  │ npm run build     │          │  - ANTHROPIC_API_KEY    │                │
-  │ npm test          │          │  - gh pr 코멘트(자문)   │                │
-  └─────────┬─────────┘          └───────────┬────────────┘                │
-            │ 통과/실패                        │ 인라인 + 요약 코멘트          │
-            ▼                                 ▼                             │
-     체크 런 상태 보고               PR 스레드에 리뷰 게시                    │
-            │                                                               │
-            ▼                                                               │
-  ┌──────────────────────────────────────────────────────────────────┐    │
-  │ (C) 브랜치 보호 (main ruleset)                                      │    │
-  │  - "Build & Test (web)" 체크 통과 필수                              │◀───┘
-  │  - PR 없이는 머지 불가, branch up-to-date 요구                       │
-  │  - force push / 삭제 차단                                           │
-  └───────────────────────────┬──────────────────────────────────────┘
-                               │
-                CI 통과 + 사람이 리뷰 코멘트 반영
-                               ▼
-                       Merge 버튼 활성화 → main 머지
+```mermaid
+flowchart TD
+    PR["개발자: feature 브랜치 push<br/>→ main 대상 PR 생성/갱신"]
+    PR --> CI["(A) ci.yml<br/>permissions: contents: read<br/>checkout@v6 · setup-node 20<br/>npm ci → build → test"]
+    PR --> AI["(B) claude-review.yml<br/>contents: read + pull-requests: write<br/>checkout(base ref) · claude-code-action@v1<br/>prompt 자동 모드 · 코멘트 전용"]
+    CI --> CIout["체크 런 상태 보고 (통과 / 실패)"]
+    AI --> AIout["PR 스레드에 인라인 + 요약 코멘트"]
+    CIout --> GATE{"(C) 브랜치 보호 (main ruleset)<br/>'Build & Test (web)' 통과 필수<br/>PR 필수 · branch up-to-date<br/>force-push / 삭제 차단"}
+    AIout -. 자문(advisory) .-> GATE
+    GATE -->|CI 통과 + 리뷰 코멘트 반영| MERGE["Merge 버튼 활성화 → main 머지"]
 ```
 
 참고: AI 리뷰(B)는 기본적으로 **자문(advisory)** 체크다 — 코멘트만 남기고 잡은
@@ -179,13 +159,14 @@
 
 권장 흐름:
 
-```
-기능 구현 (react-tdd-implementation)
-   → 로컬 검증 (integration-qa: build + vitest run)
-   → 로컬 self-review (/code-review)
-   → push & PR
-   → 원격 CI (ci.yml) + 원격 AI 리뷰 (claude-review.yml)
-   → 브랜치 보호 게이트 통과 → merge
+```mermaid
+flowchart LR
+    impl["기능 구현<br/>(react-tdd-implementation)"] --> qa["로컬 검증<br/>(integration-qa: build + vitest run)"]
+    qa --> sr["로컬 self-review<br/>(/code-review)"]
+    sr --> push["push & PR"]
+    push --> remote["원격 CI (ci.yml)<br/>+ AI 리뷰 (claude-review.yml)"]
+    remote --> gate["브랜치 보호 게이트 통과"]
+    gate --> merge["merge"]
 ```
 
 로컬과 원격이 **같은 기준**(도메인 순수성, CLAUDE.md 규칙, build/test 통과)을
