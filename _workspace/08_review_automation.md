@@ -1,4 +1,4 @@
-# 08 · 리뷰 자동화 (Review Automation) — guitar-chordex (코드살롱)
+### 08 · 리뷰 자동화 (Review Automation) — guitar-chordex (코드살롱)
 
 > 작성일: 2026-06-24
 > 대상 저장소: `guitar-chordex` (private)
@@ -7,9 +7,8 @@
 이 문서는 모든 PR을 자동으로 검증/리뷰하는 시스템의 설계, 운영 방법, 그리고
 사용자가 직접 수행해야 하는 설정을 정리한다.
 
----
 
-## 1. 시스템 개요 (How it works)
+#### 1. 시스템 개요 (How it works)
 
 리뷰 자동화는 **3개의 독립 계층**으로 구성된다. 각 계층은 서로 다른 실패를
 잡아내며, 권한이 분리되어 있어 한 계층이 침해돼도 다른 계층을 오염시키지 않는다.
@@ -42,9 +41,8 @@
 - **자동 모드.** 리뷰 워크플로는 `prompt`를 제공하므로 `@claude` 멘션 없이 PR이
   열리거나 갱신될 때 즉시 리뷰한다 (automation mode auto-detected).
 
----
 
-## 2. PR 흐름도 (PR flow)
+#### 2. PR 흐름도 (PR flow)
 
 ```mermaid
 flowchart TD
@@ -62,9 +60,8 @@ flowchart TD
 성공으로 끝난다. 따라서 머지를 막는 강제 게이트는 (A) CI다. 리뷰 잡을 실제로
 실패시키도록 구성하지 않는 한 (C)의 필수 체크에는 (A)만 등록한다.
 
----
 
-## 3. 사용자 설정 체크리스트 (USER setup, 순서대로)
+#### 3. 사용자 설정 체크리스트 (USER setup, 순서대로)
 
 워크플로 파일은 이미 저장소에 커밋된다. 아래는 **GitHub UI에서 사람이** 한 번
 수행해야 하는 작업이다.
@@ -117,9 +114,8 @@ flowchart TD
 8. **키 회전 절차.**
    Console에서 새 키 발급 → `ANTHROPIC_API_KEY` 시크릿 Update → 옛 키 폐기.
 
----
 
-## 4. 버전 핀 고정 정책 (Version pinning)
+#### 4. 버전 핀 고정 정책 (Version pinning)
 
 - **서드파티 액션은 강화 시 40자 커밋 SHA로 핀 고정**한다. `@v1` 같은 이동 가능한
   태그는 게시자(또는 침해된 저장소)가 악성 코드로 재지정할 수 있으나 SHA는
@@ -136,9 +132,8 @@ flowchart TD
 - **`@main`/`@master` 같은 떠다니는 ref는 절대 사용하지 않는다.**
 - Dependabot(`github-actions` ecosystem)으로 핀을 자동 갱신해 노후화 방지.
 
----
 
-## 5. 로컬 보완: PR 전 사전 리뷰 (Local complement)
+#### 5. 로컬 보완: PR 전 사전 리뷰 (Local complement)
 
 원격 자동화는 **마지막 방어선**이다. PR을 열기 전에 로컬에서 먼저 잡는 것이
 비용(런 분, API 토큰)과 왕복을 줄인다. guitar-chordex 하네스에는 이를 위한
