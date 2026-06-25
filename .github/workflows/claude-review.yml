@@ -12,10 +12,14 @@ on:
 # Least-privilege for an ADVISORY (comment-only) review job:
 #   contents: read       -> check out the diff
 #   pull-requests: write -> post inline + summary review comments
-# No `issues: write` and no `id-token: write` (id-token only for OIDC/Bedrock/Vertex).
+#   id-token: write      -> REQUIRED. claude-code-action exchanges an OIDC token
+#                           for a GitHub App token (to post comments). Without it
+#                           the action fails: "Could not fetch an OIDC token".
+# `issues: write` is not needed (PR comments use pull-requests: write).
 permissions:
   contents: read
   pull-requests: write
+  id-token: write
 
 # Don't pile up reviews: cancel the prior review when a new commit lands.
 concurrency:
