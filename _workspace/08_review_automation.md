@@ -33,7 +33,7 @@
   자동 모드로 동작하여 코멘트만 남기고 쓰기 도구는 주입하지 않는다.
 - **안전한 트리거.** 리뷰 워크플로는 `pull_request`(NOT `pull_request_target`)를
   사용한다. fork PR은 읽기 전용 토큰으로 실행되고 시크릿에 접근할 수 없어
-  `ANTHROPIC_API_KEY` 유출이 구조적으로 불가능하다.
+  모델 토큰(`CLAUDE_CODE_OAUTH_TOKEN`) 유출이 구조적으로 불가능하다.
 - **베이스 ref만 체크아웃.** 리뷰 잡은 `ref:` 없이 체크아웃하여 신뢰할 수 없는
   fork head 코드가 시크릿이 살아있는 워크스페이스 루트에 들어오지 않게 한다.
   (보안 문서 원문: *"Do not check out an untrusted ref into the workspace root
@@ -66,11 +66,14 @@ flowchart TD
 워크플로 파일은 이미 저장소에 커밋된다. 아래는 **GitHub UI에서 사람이** 한 번
 수행해야 하는 작업이다.
 
-1. **API 키 시크릿 추가.**
-   Settings → Secrets and variables → Actions → Secrets 탭 → New repository
-   secret → 이름 `ANTHROPIC_API_KEY`(대소문자 정확히) → Anthropic Console에서
-   발급한 키 값 붙여넣기 → Add secret.
-   (시크릿은 저장 후 다시 읽을 수 없다. 회전 시 새 키로 Update 후 옛 키 폐기.)
+1. **모델 인증 토큰 시크릿 추가 (구독 토큰 = 무료 권장).**
+   Claude Pro/Max 구독이 있으면 로컬에서 `claude setup-token` 실행 → 출력된
+   OAuth 토큰을 복사. GitHub: Settings → Secrets and variables → Actions →
+   Secrets 탭 → New repository secret → 이름 `CLAUDE_CODE_OAUTH_TOKEN`(대소문자
+   정확히) → 토큰 붙여넣기 → Add secret. 구독 한도 내에서 추가 과금이 없다.
+   (대안: 유료 API 크레딧을 쓰려면 시크릿 이름 `ANTHROPIC_API_KEY` + 워크플로의
+   `claude_code_oauth_token`을 `anthropic_api_key`로 교체. 비용 발생.)
+   시크릿은 저장 후 다시 읽을 수 없다 — 토큰 만료/회전 시 새로 생성해 Update.
 
 2. **Claude GitHub App 설치 (필수).**
    Claude가 PR에 코멘트를 달려면 Claude GitHub App이 설치돼 있어야 한다.
@@ -111,8 +114,8 @@ flowchart TD
    `.github/dependabot.yml`에 `package-ecosystem: "github-actions"`를 추가해
    핀 고정된 액션 버전이 노후화되지 않도록 게이트된 PR로 자동 갱신.
 
-8. **키 회전 절차.**
-   Console에서 새 키 발급 → `ANTHROPIC_API_KEY` 시크릿 Update → 옛 키 폐기.
+8. **토큰 회전 절차.**
+   `claude setup-token`으로 새 토큰 생성 → `CLAUDE_CODE_OAUTH_TOKEN` 시크릿 Update → 옛 토큰 폐기.
 
 
 #### 4. 버전 핀 고정 정책 (Version pinning)

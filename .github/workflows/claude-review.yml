@@ -12,10 +12,14 @@ on:
 # Least-privilege for an ADVISORY (comment-only) review job:
 #   contents: read       -> check out the diff
 #   pull-requests: write -> post inline + summary review comments
-# No `issues: write` and no `id-token: write` (id-token only for OIDC/Bedrock/Vertex).
+#   id-token: write      -> REQUIRED. claude-code-action exchanges an OIDC token
+#                           for a GitHub App token (to post comments). Without it
+#                           the action fails: "Could not fetch an OIDC token".
+# `issues: write` is not needed (PR comments use pull-requests: write).
 permissions:
   contents: read
   pull-requests: write
+  id-token: write
 
 # Don't pile up reviews: cancel the prior review when a new commit lands.
 concurrency:
@@ -40,7 +44,9 @@ jobs:
       - name: Claude PR Review
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # 모델 인증: Claude 구독(Pro/Max) OAuth 토큰 — `claude setup-token`으로 생성.
+          # 유료 API 크레딧(ANTHROPIC_API_KEY) 대신 사용해 구독 한도 내 추가 과금 0.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ADVISORY (comment-only): supplying `prompt` and OMITTING
           # `track_progress` keeps the action in automation mode (auto-detected).
           # It reviews immediately on the pull_request event with no @claude
