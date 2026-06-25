@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">코드살롱</string>
+    <string name="title_activity_main">코드살롱</string>
+    <string name="package_name">com.chordsalon.app</string>
+    <string name="custom_url_scheme">com.chordsalon.app</string>
+</resources>
