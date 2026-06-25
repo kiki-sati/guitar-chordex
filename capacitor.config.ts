@@ -2,14 +2,14 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.chordsalon.app',
-  appName: '코드살롱',
+  appName: 'Chordex',
   webDir: 'dist',
   backgroundColor: '#ffffff',
   plugins: {
     SplashScreen: {
       launchShowDuration: 800,
       launchAutoHide: true,
-      backgroundColor: '#ffffff',
+      backgroundColor: '#0052cc',
       showSpinner: false,
       androidScaleType: 'CENTER_CROP',
     },

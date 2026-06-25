@@ -7,7 +7,7 @@ import type { ScaleType } from '../domain/types';
 export type Lang = 'ko' | 'en';
 
 export const ko = {
-  brand: '코드살롱',
+  brand: 'Chordex',
   // nav
   navHome: '홈',
   navDictionary: '코드 사전',

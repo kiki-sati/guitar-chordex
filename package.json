@@ -12,7 +12,7 @@
     "cap:sync": "cap sync",
     "cap:build": "npm run build && cap sync",
     "cap:android": "npm run build && cap sync android && cap open android",
-    "cap:assets": "capacitor-assets generate --android"
+    "cap:assets": "capacitor-assets generate --android --iconBackgroundColor \"#0052cc\" --iconBackgroundColorDark \"#0052cc\" --splashBackgroundColor \"#0052cc\" --splashBackgroundColorDark \"#06122e\" && node scripts/patch-android-adaptive.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",
