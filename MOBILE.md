@@ -1,7 +1,7 @@
-### 코드살롱 모바일 (Capacitor)
+### Chordex 모바일 (Capacitor)
 
 이 문서는 웹앱(`dist/`)을 **Capacitor**로 감싼 네이티브 앱(iOS/Android)의 빌드·실행 방법을 정리한다.
-앱 정체성: appId `com.chordsalon.app`, 앱 이름 `코드살롱`. 설정은 `capacitor.config.ts`.
+앱 정체성: appId `com.chordsalon.app`, 앱 이름 `Chordex`. 설정은 `capacitor.config.ts`.
 
 #### 한눈에
 

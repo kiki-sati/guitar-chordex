@@ -9,7 +9,7 @@ import { seedGrass } from './state/seed';
 describe('App shell', () => {
   it('renders the brand name in the sidebar', () => {
     render(<App />);
-    expect(screen.getByText('코드살롱')).toBeInTheDocument();
+    expect(screen.getByText('Chordex')).toBeInTheDocument();
   });
 
   it('starts on the Home view', () => {
