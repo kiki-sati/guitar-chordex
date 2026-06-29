@@ -1,0 +1,51 @@
+name: Auto-merge
+
+# main 으로 가는 PR에 GitHub 네이티브 auto-merge 를 자동으로 켠다.
+# 필수 상태체크 "Build & Test (web)" 가 통과하면 GitHub 이 PR 을 자동 머지한다.
+# (사용자가 매번 머지 버튼을 누르지 않아도 됨.)
+#
+# 저장소 설정 (1회 — 사용자가 직접):
+#   1. Settings → General → Pull Requests → "Allow auto-merge" 체크
+#   2. Settings → Branches → main 브랜치 보호 규칙:
+#        "Require status checks to pass before merging" 켜고
+#        "Build & Test (web)" 를 required check 로 추가
+#   둘 다 켜야 의도대로 동작한다. 없으면 아래 스텝이 안내만 로그로 남기고 넘어간다.
+#
+# SAFE: `pull_request` (NOT pull_request_target). 포크 PR 의 GITHUB_TOKEN 은
+# read-only 라 포크에는 auto-merge 가 안 켜진다(의도된 안전 동작 — 신뢰 브랜치만 자동 머지).
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, ready_for_review, synchronize]
+
+# auto-merge 활성화에 필요한 최소 권한.
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  enable-auto-merge:
+    name: Enable auto-merge
+    runs-on: ubuntu-latest
+    # 드래프트는 제외 — ready_for_review 시 다시 트리거된다.
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Enable native auto-merge (merge commit)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          # 이미 켜져 있으면 no-op. 실패해도 PR 을 막지 않도록 비치명적으로 처리.
+          if gh pr merge --auto --merge "$PR"; then
+            echo "✓ PR #$PR auto-merge 활성화 — 필수 체크 통과 시 GitHub 이 자동 머지합니다."
+          else
+            echo "⚠ auto-merge 활성화 실패 — 다음을 확인하세요:"
+            echo "  (1) Settings → General → 'Allow auto-merge' ON"
+            echo "  (2) main 브랜치 보호에 required check 'Build & Test (web)' 지정"
+            echo "  (포크 PR 이면 GITHUB_TOKEN 이 read-only 라 정상적으로 건너뜁니다.)"
+          fi
