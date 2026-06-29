@@ -107,6 +107,21 @@ export const ko = {
   homeToBuilder: '악보 만들기 →',
   daySuffix: '일',
   timesSuffix: '회',
+  // auth / login gate (PR④) — ko only (EN은 후속 i18n PR)
+  loginTitle: 'Chordex',
+  loginSubtitle: '로그인하고 연습 기록을 기기 간에 안전하게 보관하세요',
+  loginGoogle: 'Google로 계속',
+  loginApple: 'Apple로 계속',
+  loginEmailDivider: '또는 이메일로',
+  loginEmailLabel: '이메일',
+  loginEmailPlaceholder: 'you@example.com',
+  loginEmailSubmit: '로그인 링크 받기',
+  loginEmailSending: '보내는 중…',
+  loginEmailInvalid: '올바른 이메일 주소를 입력하세요',
+  loginEmailSent: '메일함을 확인하세요. 로그인 링크를 보냈어요.',
+  loginEmailError: '로그인 링크를 보내지 못했어요. 잠시 후 다시 시도하세요.',
+  loginLoading: '불러오는 중…',
+  logout: '로그아웃',
 } as const;
 
 /** 헤더 타이틀 맵: [title, subtitle, eyebrow] */

@@ -76,3 +76,21 @@
   font-size: 12px;
   color: #000;
 }
+.logoutBtn {
+  margin-top: 14px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 480;
+  font-family: var(--f-sans);
+  text-align: left;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--c-muted);
+  cursor: pointer;
+}
+.logoutBtn:hover {
+  background: var(--c-panel);
+  color: var(--c-ink);
+}
