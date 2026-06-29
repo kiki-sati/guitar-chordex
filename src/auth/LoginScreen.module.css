@@ -1,0 +1,150 @@
+.screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--s-lg);
+  background: var(--c-panel);
+  font-family: var(--f-sans);
+  color: var(--c-ink);
+}
+
+.card {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-sm);
+  padding: var(--s-xl) var(--s-lg);
+  background: var(--c-canvas);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-card);
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-xs);
+}
+
+.logo {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.brand {
+  font-size: 22px;
+  font-weight: 540;
+  letter-spacing: -0.4px;
+}
+
+.subtitle {
+  margin: 0 0 var(--s-xs);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--c-muted);
+}
+
+/* OAuth: outline 변형 (Header .logBtn 톤의 outline 형) */
+.oauthBtn {
+  width: 100%;
+  padding: 11px 16px;
+  font-size: 15px;
+  font-weight: 480;
+  font-family: var(--f-sans);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-pill);
+  background: var(--c-canvas);
+  color: var(--c-ink);
+  cursor: pointer;
+}
+
+.oauthBtn:hover {
+  background: var(--c-panel);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  margin: var(--s-xs) 0;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--c-faint);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--c-border);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-xs);
+}
+
+.label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  font-family: var(--f-sans);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: var(--c-canvas);
+  color: var(--c-ink);
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--c-accent);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--c-accent);
+}
+
+/* 채움 버튼: Header .logBtn 톤 재현 */
+.submitBtn {
+  width: 100%;
+  padding: 11px 16px;
+  font-size: 15px;
+  font-weight: 480;
+  font-family: var(--f-sans);
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--c-ink);
+  color: #fff;
+  cursor: pointer;
+}
+
+.submitBtn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.alert {
+  margin: 0;
+  font-size: 13px;
+  color: var(--c-accent);
+}
+
+.notice {
+  margin: 0;
+  font-size: 13px;
+  color: var(--c-muted);
+}

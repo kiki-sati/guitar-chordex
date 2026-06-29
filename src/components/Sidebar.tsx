@@ -1,4 +1,5 @@
 import { useApp } from '../state/AppContext';
+import { useAuth } from '../auth/AuthProvider';
 import { stats } from '../domain/practice';
 import { ko } from '../i18n/strings';
 import styles from './Sidebar.module.css';
@@ -24,6 +25,7 @@ const NAV_DEFS: NavDef[] = [
 /** 좌측 사이드바 (원본 라인 48-72). */
 export function Sidebar() {
   const { state, dispatch } = useApp();
+  const { status, signOut } = useAuth();
   const st = stats(state.grass);
 
   return (
@@ -84,6 +86,15 @@ export function Sidebar() {
             {ko.timesSuffix + ' · ' + st.streak + ko.daySuffix + ' 연속'}
           </span>
         </div>
+        {status === 'authenticated' && (
+          <button
+            type="button"
+            className={styles.logoutBtn}
+            onClick={() => void signOut()}
+          >
+            {ko.logout}
+          </button>
+        )}
       </div>
     </aside>
   );

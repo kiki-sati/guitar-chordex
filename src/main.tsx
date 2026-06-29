@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { AuthProvider } from './auth/AuthProvider';
+import { AuthGate } from './auth/AuthGate';
 import { initNative } from './native';
 import './styles/tokens.css';
 import './styles/global.css';
@@ -10,7 +12,11 @@ if (!rootEl) throw new Error('#root element not found');
 
 createRoot(rootEl).render(
   <StrictMode>
-    <App />
+    <AuthProvider>
+      <AuthGate>
+        <App />
+      </AuthGate>
+    </AuthProvider>
   </StrictMode>,
 );
 
