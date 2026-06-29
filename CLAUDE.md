@@ -71,13 +71,14 @@ type KeyType = 'major' | 'minor';
 
 **Git / PR** (사용자 규칙)
 - `main`에 직접 commit/push **금지**(최초 베이스라인 부트스트랩 1회 제외). 작업은 `feat|fix|docs|refactor|test|chore/{slug}` 브랜치에서.
-- **Conventional Commits**(`type(scope): summary`). **사용자 승인 전 merge 금지.**
+- **Conventional Commits**(`type(scope): summary`).
+- **머지 정책**: PR은 `Build & Test (web)` 체크 통과 시 **GitHub 네이티브 auto-merge로 자동 병합**된다(`.github/workflows/auto-merge.yml`가 PR마다 auto-merge를 켬). Claude는 `gh pr merge`로 **수동·강제 머지하지 않고**, 자동 게이트(필수 CI 체크)를 우회하지 않는다. (사용자가 명시적으로 "지금 머지"를 지시하면 예외.)
 - **작업단위로 PR 분리** — 여러 작업/무관한 리팩토링을 한 PR에 묶지 않는다.
 - 커밋 전 `git rev-parse --abbrev-ref HEAD`로 브랜치 확인(세션 혼선 방지). `gh`는 인증됨(account kiki-sati).
 
 ## Do Not
 
-- main 직접 push / 사용자 승인 없이 merge
+- main 직접 push / 필수 CI 게이트(`Build & Test (web)`) 우회·강제 머지
 - 도메인 보이싱·다이어그램 기하 수치를 음악 검증 없이 변경
 - UI 컴포넌트에서 코드/스케일/보이싱/기하 로직 직접 구현
 - `service_role` key·`.env` 커밋 / anon 외 시크릿 클라이언트 노출
