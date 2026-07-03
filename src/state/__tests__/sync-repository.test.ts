@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SyncRepo } from '../sync-repository';
 import { createQueue } from '../../sync/queue';
-import { userKeyPrefix } from '../user-keys';
 import type { SupabaseRepository } from '../supabase-repository';
 import type { PersistedState } from '../persist';
 import type { RepoChange } from '../repo-change';
