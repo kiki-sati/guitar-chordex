@@ -122,6 +122,13 @@ export const ko = {
   loginEmailError: '로그인 링크를 보내지 못했어요. 잠시 후 다시 시도하세요.',
   loginLoading: '불러오는 중…',
   logout: '로그아웃',
+  // migration (PR⑤ §9.2) — 로컬 데이터 → 계정 가져오기 모달
+  migrateTitle: '이 기기의 연습 기록을 계정으로 가져올까요?',
+  migrateBody:
+    '로그인 전에 이 기기에 쌓아둔 잔디·일지·드릴·담은 코드가 있어요. 계정으로 가져오면 다른 기기에서도 이어서 볼 수 있어요.',
+  migrateImport: '가져오기',
+  migrateSkip: '새로 시작',
+  migrateImporting: '가져오는 중…',
 } as const;
 
 /** 헤더 타이틀 맵: [title, subtitle, eyebrow] */

@@ -213,4 +213,29 @@ export class SupabaseRepository {
       );
     assertOk(res);
   }
+
+  // ── 마이그레이션 플래그 (PR⑤ §9.3) — profiles 전용, 도메인 비누출 ──
+
+  /** profiles.migrated_at 조회. 행/값 부재 시 null. */
+  async getMigratedAt(): Promise<string | null> {
+    const res = await this.client
+      .from(TABLE.profiles)
+      .select('migrated_at')
+      .eq('id', this.userId)
+      .maybeSingle();
+    assertOk(res);
+    const data = res.data as { migrated_at?: string | null } | null;
+    return data?.migrated_at ?? null;
+  }
+
+  /** profiles.migrated_at set → upsert {id, migrated_at, updated_at} onConflict id. */
+  async setMigratedAt(ts: string): Promise<void> {
+    const res = await this.client
+      .from(TABLE.profiles)
+      .upsert(
+        { id: this.userId, migrated_at: ts, updated_at: this.now() },
+        { onConflict: 'id' },
+      );
+    assertOk(res);
+  }
 }
