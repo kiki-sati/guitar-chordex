@@ -8,6 +8,7 @@ import {
 } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { clearUserCache } from '../state/user-keys';
 
 export type AuthStatus =
   | 'loading' // getSession in-flight
@@ -115,7 +116,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       signOut: async () => {
         if (!supabase) return;
+        // 직전 로그인 uid를 signOut 전에 포착(이후 session이 null로 전이됨).
+        const prevUid = session?.user?.id ?? null;
         await supabase.auth.signOut();
+        // 공유기기 프라이버시(AC⑤-9): 이전 user의 캐시·큐를 물리 삭제.
+        // legacy `cs_*`·다른 uid는 미영향 → 로컬 모드 회귀 0, 다계정 격리 유지.
+        if (prevUid) clearUserCache(prevUid);
       },
     };
   }, [status, session]);
