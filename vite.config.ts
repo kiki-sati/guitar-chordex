@@ -3,7 +3,10 @@ import { defineConfig, configDefaults } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
+// base: GitHub Pages(프로젝트 페이지)는 서브경로에 서빙되므로 BASE_PATH로 주입.
+// 기본값 '/' → 로컬 dev·Capacitor 빌드 무영향. Pages 배포 워크플로만 '/guitar-chordex/' 설정.
 export default defineConfig({
+  base: process.env.BASE_PATH || '/',
   plugins: [react()],
   test: {
     globals: true,
