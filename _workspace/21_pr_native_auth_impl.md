@@ -71,7 +71,7 @@
 ## 4. 계획 대비 편차
 1. **Apple 플러그인 버전**: 계획 §구획2는 "8-호환 태그" 제안. 실제 설치본은 `@capacitor-community/apple-sign-in@7.1.0`. `cap sync android`에서 정상 링크되고 API(`authorize`)는 계획 가정과 동일하므로 그대로 사용. (이 플러그인의 최신 안정 태그가 7.x. Capacitor 8과 호환.)
 2. **Google 플러그인 API 형태**: 계획은 "idToken 반환" 가정. 실제 capgo는 **`initialize` 선행 필수** + 응답이 online/offline 판별 유니온. 어댑터에서 `initialize` 호출 후 `responseType==='online'` 가드로 idToken을 안전 추출(offline이면 throw)하도록 배선.
-3. **nonce 흐름 명확화**: 계획 §2.2는 "Apple raw nonce" 언급. 실제 구현은 **Apple=해시 전달/raw 반환**, **Google=raw 전달/raw 반환**으로 각 플러그인 규약에 맞춰 정규화. 둘 다 `signInWithIdToken({nonce})`에 raw nonce 전달(Google은 idToken에 nonce가 없을 수도 있어 `nonce: undefined` 허용 — 테스트로 명시).
+3. **nonce 흐름 명확화**: 계획 §2.2는 "Apple raw nonce" 언급. 실제 구현은 **Apple=해시 전달/raw 반환**, **Google=raw 전달/raw 반환**으로 각 플러그인 규약에 맞춰 정규화. 둘 다 raw nonce를 반환하고 `AuthProvider`가 어댑터 반환 nonce를 `signInWithIdToken({nonce})`에 그대로 forward한다(Apple=raw, Google=raw). `AuthProvider.native.test`는 어댑터를 nonce 없이 mock해 "반환 nonce를 그대로 전달"만 격리 검증하고, Google의 실제 raw-nonce 왕복은 `nativeSignIn.test`가 별도 커버.
 4. **env 설정 추가**: 콘솔 발급 값(clientId/webClientId 등)을 하드코딩할 수 없어 `import.meta.env.VITE_*`로 주입하고 `vite-env.d.ts`·`.env.example`에 문서화(기존 supabase env 패턴과 동일). 미설정이어도 웹 빌드·테스트 무영향.
 5. **net.ts 리스너 등록 순서**: `addListener`를 `getStatus` await **전에** 등록(로드 직후 상태 변화 유실 방지 + 테스트 결정성). 동작·시그니처 영향 없음.
 
