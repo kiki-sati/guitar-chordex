@@ -9,7 +9,13 @@ import {
 } from 'react';
 import { reducer, initState, type Action, type AppState } from './appReducer';
 import { LocalRepository } from './local-repository';
-import type { Repository } from './repository';
+import {
+  isAsyncRepository,
+  type AsyncRepository,
+  type Repository,
+} from './repository';
+import type { PersistedState } from './persist';
+import { diffChanges } from './diff-changes';
 
 interface AppContextValue {
   state: AppState;
@@ -21,37 +27,77 @@ const AppContext = createContext<AppContextValue | null>(null);
 export interface AppProviderProps {
   children: ReactNode;
   /**
-   * 영속화 어댑터. 테스트나 후속 PR(Supabase/Sync)에서 다른 구현을
-   * 주입할 수 있다. 미지정 시 LocalRepository(localStorage)가 사용된다.
+   * 영속화 어댑터. 미지정 시 동기 LocalRepository(localStorage).
+   *   - 동기 Repository/미지정 → 기존 loadAll()/saveAll(patch) 경로(회귀 0).
+   *   - AsyncRepository(SyncRepo) → loadCached() 즉시 + start() 백그라운드 pull
+   *     + apply(diffChanges) (계획 17 §4.2/§7.2).
    */
-  repository?: Repository;
+  repository?: Repository | AsyncRepository;
+}
+
+/** 상태에서 persisted 슬라이스만 추출(effect diff/save 공용). */
+function persistedOf(state: AppState): PersistedState {
+  return {
+    grass: state.grass,
+    journal: state.journal,
+    drills: state.drills,
+    collected: state.collected,
+    lang: state.lang,
+  };
 }
 
 export function AppProvider({ children, repository }: AppProviderProps) {
-  // 주입된 repo가 없으면 기본 LocalRepository 사용. 동일 마운트 동안 안정한 참조 유지.
-  const repo = useMemo<Repository>(
+  // 주입된 repo가 없으면 기본 동기 LocalRepository. 동일 마운트 동안 안정한 참조.
+  const repo = useMemo<Repository | AsyncRepository>(
     () => repository ?? new LocalRepository(),
     [repository],
   );
+  const async = isAsyncRepository(repo);
 
   const [state, dispatch] = useReducer(reducer, undefined, () =>
-    initState(repo.loadAll()),
+    initState(async ? repo.loadCached() : repo.loadAll()),
   );
 
-  // 영속화: 영속 키 변경 시 saveAll. 첫 마운트(load 직후)는 skip.
-  const firstRun = useRef(true);
+  // HYDRATE로 인한 상태 변경은 push 대상이 아니다(서버에서 온 값 재푸시 방지).
+  // start 콜백이 이 플래그를 세우면 다음 persist-effect 실행은 apply를 건너뛰고
+  // prevPersisted만 동기화한다.
+  const skipNextApply = useRef(false);
+
+  // 백그라운드 pull(async): start(onMerged→HYDRATE) 1회 + dispose(언마운트).
   useEffect(() => {
+    if (!isAsyncRepository(repo)) return;
+    repo.start((merged) => {
+      skipNextApply.current = true;
+      dispatch({ type: 'HYDRATE', persisted: merged });
+    });
+    return () => repo.dispose();
+  }, [repo]);
+
+  // 영속화: 영속 키 변경 시. 첫 마운트(load 직후)는 skip.
+  const firstRun = useRef(true);
+  const prevPersisted = useRef<PersistedState>(persistedOf(state));
+  useEffect(() => {
+    const next = persistedOf(state);
     if (firstRun.current) {
       firstRun.current = false;
+      prevPersisted.current = next;
       return;
     }
-    repo.saveAll({
-      grass: state.grass,
-      journal: state.journal,
-      drills: state.drills,
-      collected: state.collected,
-      lang: state.lang,
-    });
+    if (isAsyncRepository(repo)) {
+      if (skipNextApply.current) {
+        // HYDRATE 유발 변경: push하지 않고 기준선만 갱신.
+        skipNextApply.current = false;
+        prevPersisted.current = next;
+        return;
+      }
+      // prev→next diff → RepoChange[] → apply(캐시+큐+push).
+      const changes = diffChanges(prevPersisted.current, next);
+      prevPersisted.current = next;
+      if (changes.length > 0) void repo.apply(changes);
+    } else {
+      prevPersisted.current = next;
+      repo.saveAll(next);
+    }
   }, [
     repo,
     state.grass,

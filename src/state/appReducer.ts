@@ -78,7 +78,8 @@ export type Action =
   | { type: 'RESET_DRILLS' }
   | { type: 'SET_DRILL_DRAFT'; patch: DrillDraftPatch }
   | { type: 'SHOW_TOAST'; msg: string }
-  | { type: 'CLEAR_TOAST' };
+  | { type: 'CLEAR_TOAST' }
+  | { type: 'HYDRATE'; persisted: PersistedState };
 
 /** persisted slice + 트랜션트 기본값으로 초기 상태 구성. */
 export function initState(persisted: PersistedState): AppState {
@@ -262,6 +263,18 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, toast: action.msg };
     case 'CLEAR_TOAST':
       return { ...state, toast: '' };
+
+    case 'HYDRATE':
+      // 서버 pull/merge 결과로 persisted 4슬라이스 + lang만 교체.
+      // 트랜션트(view/드래프트/toast/detail 등)는 spread로 보존(순수 — §4.2).
+      return {
+        ...state,
+        grass: action.persisted.grass,
+        journal: action.persisted.journal,
+        drills: action.persisted.drills,
+        collected: action.persisted.collected,
+        lang: action.persisted.lang,
+      };
 
     default: {
       // 완전성 보장 (모든 Action 처리)
