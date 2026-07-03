@@ -22,6 +22,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- OAuth 딥링크 콜백(com.chordsalon.app://). launchMode=singleTask라
+                 기존 인스턴스로 전달된다. custom_url_scheme은 strings.xml 소유. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="@string/custom_url_scheme" />
+            </intent-filter>
+
         </activity>
 
         <provider
