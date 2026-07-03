@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import type { PluginListenerHandle } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
-import { AppProvider, useApp } from './state/AppContext';
+import { useApp } from './state/AppContext';
+import { RepoBoundary } from './state/RepoBoundary';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Toast } from './components/Toast';
@@ -84,8 +85,8 @@ function Shell() {
 
 export function App() {
   return (
-    <AppProvider>
+    <RepoBoundary>
       <Shell />
-    </AppProvider>
+    </RepoBoundary>
   );
 }
