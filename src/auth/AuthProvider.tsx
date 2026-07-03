@@ -7,7 +7,9 @@ import {
   type ReactNode,
 } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { appleNativeIdToken, googleNativeIdToken } from './nativeSignIn';
 import { clearUserCache } from '../state/user-keys';
 
 export type AuthStatus =
@@ -93,14 +95,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       loading: status === 'loading',
       signInWithGoogle: async () => {
-        if (!supabase) return;
+        if (!supabase) return; // local-mode no-op (AC-8)
+        if (Capacitor.isNativePlatform()) {
+          // 네이티브: 시트 어댑터 → idToken → signInWithIdToken.
+          const { idToken, nonce } = await googleNativeIdToken();
+          await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: idToken,
+            nonce,
+          });
+          return;
+        }
         await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: { redirectTo: origin },
         });
       },
       signInWithApple: async () => {
-        if (!supabase) return;
+        if (!supabase) return; // local-mode no-op (AC-8)
+        if (Capacitor.isNativePlatform()) {
+          // 네이티브: Apple raw nonce를 signInWithIdToken에 함께 전달.
+          const { idToken, nonce } = await appleNativeIdToken();
+          await supabase.auth.signInWithIdToken({
+            provider: 'apple',
+            token: idToken,
+            nonce,
+          });
+          return;
+        }
         await supabase.auth.signInWithOAuth({
           provider: 'apple',
           options: { redirectTo: origin },
