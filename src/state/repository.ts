@@ -5,6 +5,7 @@ import type {
   JournalEntry,
 } from '../domain/types';
 import type { PersistedState } from './persist';
+import type { RepoChange } from './repo-change';
 
 /**
  * 영속화 추상화 인터페이스.
@@ -48,4 +49,37 @@ export interface Repository {
   // ── 언어 ──
   getLang(): Lang;
   setLang(lang: Lang): void;
+}
+
+/**
+ * 비동기 영속화 어댑터(SyncRepo — PR⑤).
+ *
+ * 동기 `Repository`를 승급하지 않고 별도 인터페이스로 신설한다(계획 17 §4.1).
+ * AppProvider는 주입된 repo의 종류(타입 가드 isAsyncRepository)에 따라
+ * 두 초기화 경로 중 하나를 탄다:
+ *   - 동기 Repository/주입 없음 → 기존 loadAll()/saveAll(patch) 경로(회귀 0).
+ *   - AsyncRepository        → loadCached() 즉시 + start() 백그라운드 pull.
+ *
+ * load 계약("캐시 즉시 반환"):
+ *   - loadCached(): 로컬 user-prefix 캐시를 즉시 동기 반환 → 초기 렌더 blocking 없음.
+ *   - start(onMerged): 백그라운드 pull→merge 시작. merge 결과를 콜백 통지(초기 pull 완료 시 1회).
+ *   - apply(changes): 캐시 즉시 머지 + 큐 적재 + (온라인) push.
+ *   - dispose(): 리스너/타이머 정리(online 이벤트 등, 멱등).
+ */
+export interface AsyncRepository {
+  /** 로컬 user-prefix 캐시 즉시 반환(동기). 없으면 빈 상태(seed 미적용 — AC⑤-8). */
+  loadCached(): PersistedState;
+  /** 백그라운드 pull→merge 시작. 머지된 PersistedState를 통지(초기 pull 완료 시 1회). */
+  start(onMerged: (merged: PersistedState) => void): void;
+  /** 변경 적용: 캐시 즉시 머지 + 큐 적재 + (온라인) push. */
+  apply(changes: RepoChange[]): Promise<void>;
+  /** 리스너/타이머 정리(멱등). */
+  dispose(): void;
+}
+
+/** 주입 repo 판별(타입 가드). AppProvider가 경로 분기에 사용(§4.1). */
+export function isAsyncRepository(
+  r: Repository | AsyncRepository,
+): r is AsyncRepository {
+  return typeof (r as AsyncRepository).loadCached === 'function';
 }
