@@ -42,6 +42,8 @@ vi.mock('../../lib/supabase', () => ({
 
 // import after mock registration
 import { AuthProvider, useAuth } from '../AuthProvider';
+import { userCacheKeys } from '../../state/user-keys';
+import { KEYS } from '../../state/persist';
 
 const ORIGIN = window.location.origin;
 
@@ -167,6 +169,71 @@ describe('AuthProvider — configured', () => {
     );
     await user.click(screen.getByText('o'));
     expect(authMock.signOut).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('AuthProvider — logout cache cleanup (AC⑤-9 · 공유기기 프라이버시)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('signOut physically removes the previous user cache + queue keys', async () => {
+    authMock.getSession.mockResolvedValue({
+      data: { session: { user: { id: 'u1' } } },
+    });
+    for (const k of userCacheKeys('u1')) localStorage.setItem(k, 'x');
+
+    const user = userEvent.setup();
+    renderProvider();
+    await waitFor(() =>
+      expect(screen.getByTestId('status').textContent).toBe('authenticated'),
+    );
+
+    await user.click(screen.getByText('o'));
+
+    expect(authMock.signOut).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      for (const k of userCacheKeys('u1')) {
+        expect(localStorage.getItem(k)).toBeNull();
+      }
+    });
+  });
+
+  it('leaves another user namespace and legacy cs_* keys intact', async () => {
+    authMock.getSession.mockResolvedValue({
+      data: { session: { user: { id: 'u1' } } },
+    });
+    localStorage.setItem(`u:u1:${KEYS.grass}`, 'x');
+    localStorage.setItem(`u:other:${KEYS.grass}`, 'keep');
+    localStorage.setItem(KEYS.grass, 'legacy');
+
+    const user = userEvent.setup();
+    renderProvider();
+    await waitFor(() =>
+      expect(screen.getByTestId('status').textContent).toBe('authenticated'),
+    );
+
+    await user.click(screen.getByText('o'));
+
+    await waitFor(() =>
+      expect(localStorage.getItem(`u:u1:${KEYS.grass}`)).toBeNull(),
+    );
+    expect(localStorage.getItem(`u:other:${KEYS.grass}`)).toBe('keep');
+    expect(localStorage.getItem(KEYS.grass)).toBe('legacy');
+  });
+
+  it('unauthenticated signOut is a no-op on storage (prevUid null)', async () => {
+    authMock.getSession.mockResolvedValue({ data: { session: null } });
+    localStorage.setItem(KEYS.grass, 'legacy');
+
+    const user = userEvent.setup();
+    renderProvider();
+    await waitFor(() =>
+      expect(screen.getByTestId('status')).toHaveTextContent('unauthenticated'),
+    );
+
+    await user.click(screen.getByText('o'));
+
+    expect(authMock.signOut).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem(KEYS.grass)).toBe('legacy');
   });
 });
 
