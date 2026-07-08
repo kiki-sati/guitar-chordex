@@ -41,6 +41,8 @@ export const ko = {
   modalEmpty: '이 코드의 표준 폼을 찾지 못했어요.',
   formOpen: 'OPEN',
   detailBack: '뒤로가기',
+  // 표준(CAGED) 폼 쉐입 배지 — E/A/D 등 무버블 바레 폼임을 알린다 ('open'은 호출부에서 제외).
+  shapeBadge: (s: string) => s + '폼 바레',
   // 폼별 생략 (해당 폼이 공식 음을 생략할 때 카드에 배지 + 상단 캡션)
   tonesOmittedCaption: '일부 폼은 5도 등 비필수음을 생략합니다',
   omitBadge: (notes: string) => notes + ' 생략',

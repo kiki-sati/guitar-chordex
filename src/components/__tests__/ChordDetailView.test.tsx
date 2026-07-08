@@ -3,10 +3,27 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ChordDetailView } from '../ChordDetailView';
 import { ko } from '../../i18n/strings';
-import { allVoicings } from '../../domain/voicing';
+import { voicingsByPosition } from '../../domain/voicing';
+import { computeDiagram } from '../../domain/diagram';
 import type { ChordDetail } from '../../domain/types';
 
 const noop = () => {};
+
+// 총 폼 수 = 포지션별 폼 수 합계 (평면 리스트 길이와 동일해야 함).
+function totalForms(detail: ChordDetail): number {
+  return voicingsByPosition(detail.root, detail.qualKey).reduce(
+    (a, p) => a + p.forms.length,
+    0,
+  );
+}
+
+// 포지션 헤더 라벨은 그 포지션 첫 폼의 다이어그램 기준으로 도출(컴포넌트와 동일 규칙).
+function headerLabels(detail: ChordDetail): string[] {
+  return voicingsByPosition(detail.root, detail.qualKey).map((p) => {
+    const g = computeDiagram(p.forms[0].frets);
+    return g.showNut ? ko.formOpen : g.start + 'fr';
+  });
+}
 
 function renderView(
   detail: ChordDetail,
@@ -25,13 +42,13 @@ function renderView(
 }
 
 describe('ChordDetailView — screen (not modal)', () => {
-  it('renders the ALL VOICINGS label with the form count and one card per voicing', () => {
+  it('renders the ALL VOICINGS label with the form count and one card per form', () => {
     const detail: ChordDetail = { root: 0, qualKey: 'maj', name: 'C' };
-    const n = allVoicings(detail.root, detail.qualKey).length;
+    const n = totalForms(detail);
     renderView(detail);
 
     expect(screen.getByText(ko.allVoicings(n))).toBeInTheDocument();
-    // each form card carries the tones-variant diagram; count via form labels
+    // 총 폼 수 == 렌더된 form-card 수 (포지션 그룹으로 나뉘어도 총계 동일)
     expect(screen.getAllByTestId('form-card')).toHaveLength(n);
   });
 
@@ -63,6 +80,60 @@ describe('ChordDetailView — screen (not modal)', () => {
     expect(arg).toHaveProperty('frets');
     expect(arg).toHaveProperty('key');
     expect(arg.frets).toHaveLength(6);
+  });
+});
+
+describe('ChordDetailView — position grouping (voicing forms UI)', () => {
+  it('groups forms under position headers (B4): at least one position-header renders', () => {
+    renderView({ root: 0, qualKey: 'maj7', name: 'Cmaj7' });
+    const headers = screen.getAllByTestId('position-header');
+    expect(headers.length).toBeGreaterThan(0);
+    // 포지션 섹션 수 == 포지션 헤더 수
+    expect(screen.getAllByTestId('position-section')).toHaveLength(
+      headers.length,
+    );
+  });
+
+  it('position headers match the labels derived from voicingsByPosition + computeDiagram', () => {
+    const detail: ChordDetail = { root: 0, qualKey: 'maj7', name: 'Cmaj7' };
+    const expected = headerLabels(detail);
+    renderView(detail);
+    const rendered = screen
+      .getAllByTestId('position-header')
+      .map((el) => el.textContent);
+    expect(rendered).toEqual(expected);
+  });
+
+  it('Cmaj7: shows the E-shape full-barre position (8fr) header among multiple positions', () => {
+    const detail: ChordDetail = { root: 0, qualKey: 'maj7', name: 'Cmaj7' };
+    // 기대 라벨을 API 결과에서 도출(하드코딩 금지). E쉐입 풀바레는 8fr 라벨로 나타남.
+    const expected = headerLabels(detail);
+    expect(expected).toContain('8fr'); // API 계약 전제 실측
+    renderView(detail);
+    const rendered = screen
+      .getAllByTestId('position-header')
+      .map((el) => el.textContent);
+    expect(rendered).toContain('8fr');
+    // 여러 포지션이 관측된다(단일 포지션이 아님)
+    expect(new Set(rendered).size).toBeGreaterThan(1);
+  });
+
+  it('Cmaj7: the A-shape barre form (x-3-5-4-5-3, pos=3) is present via its shape badge (A1 golden)', () => {
+    const detail: ChordDetail = { root: 0, qualKey: 'maj7', name: 'Cmaj7' };
+    // API가 A쉐입 template 폼을 낸다는 전제를 실측으로 확인.
+    const positions = voicingsByPosition(detail.root, detail.qualKey);
+    const aShape = positions
+      .flatMap((p) => p.forms)
+      .find((f) => f.source === 'template' && f.shape === 'A');
+    expect(aShape).toBeDefined();
+    expect(aShape?.frets).toEqual(['x', 3, 5, 4, 5, 3]);
+
+    renderView(detail);
+    // 화면에 A쉐입 배지가 존재 → 사용자가 그 폼을 볼 수 있다.
+    const badges = screen
+      .getAllByTestId('shape-badge')
+      .map((el) => el.textContent);
+    expect(badges).toContain(ko.shapeBadge('A'));
   });
 });
 

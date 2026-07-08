@@ -1,12 +1,17 @@
 import { ChordDiagram } from './ChordDiagram';
-import { allVoicings } from '../domain/voicing';
+import { voicingsByPosition } from '../domain/voicing';
 import { computeDiagram } from '../domain/diagram';
 import { omittedInVoicing } from '../domain/voicing-pcs';
 import { noteName } from '../domain/notes';
 import { INTERVALS } from '../domain/constants';
 import { ko } from '../i18n/strings';
 import styles from './ChordDetailView.module.css';
-import type { ChordDetail, CollectedChord, FretArray } from '../domain/types';
+import type {
+  ChordDetail,
+  CollectedChord,
+  FretArray,
+  VoicingForm,
+} from '../domain/types';
 
 interface ChordDetailViewProps {
   detail: ChordDetail;
@@ -16,14 +21,20 @@ interface ChordDetailViewProps {
 
 /**
  * 모든 폼 상세 화면 (구 ChordDetailModal 본문 이관 — 팝업 → 전용 화면).
- * 도메인 계산(allVoicings/computeDiagram/INTERVALS)만 호출, 음악 로직 직접 구현 없음.
+ * 도메인 계산(voicingsByPosition/computeDiagram/INTERVALS)만 호출, 음악 로직 직접 구현 없음.
+ * 폼을 포지션(같은 최저 프렛)으로 그룹핑해 헤더 섹션으로 렌더한다 — 사용자가
+ * 각 프렛 자리에서 잡을 수 있는 여러 폼을 한눈에 볼 수 있게(코드 사전 성격).
  */
 export function ChordDetailView({
   detail,
   onBack,
   onCollect,
 }: ChordDetailViewProps) {
-  const voicings = allVoicings(detail.root, detail.qualKey);
+  const positions = voicingsByPosition(detail.root, detail.qualKey);
+  // 평면 파생: 앱바 담기(대표 폼) · 생략 판정에 사용.
+  const allForms = positions.flatMap((p) => p.forms);
+  const total = allForms.length;
+
   // 톤 칩은 코드 공식 그대로(정확). 생략 여부는 폼별로 카드에 표시한다.
   const tones = INTERVALS[detail.qualKey].map((i) =>
     noteName((detail.root + i) % 12),
@@ -45,7 +56,7 @@ export function ChordDetailView({
     });
     return labels;
   };
-  const hasOmission = voicings.some((fr) => omittedLabels(fr).length > 0);
+  const hasOmission = allForms.some((f) => omittedLabels(f.frets).length > 0);
 
   return (
     <div className={styles.screen}>
@@ -67,7 +78,9 @@ export function ChordDetailView({
           onClick={() =>
             onCollect({
               name: detail.name,
-              frets: voicings[0] ?? (['x', 'x', 'x', 'x', 'x', 'x'] as FretArray),
+              frets:
+                allForms[0]?.frets ??
+                (['x', 'x', 'x', 'x', 'x', 'x'] as FretArray),
               key: detail.name,
             })
           }
@@ -77,7 +90,7 @@ export function ChordDetailView({
       </div>
 
       <div className={styles.content}>
-        <div className={styles.eyebrow}>{ko.allVoicings(voicings.length)}</div>
+        <div className={styles.eyebrow}>{ko.allVoicings(total)}</div>
 
         <div className={styles.tones}>
           {tones.map((t, i) => (
@@ -90,66 +103,109 @@ export function ChordDetailView({
           <div className={styles.tonesCaption}>{ko.tonesOmittedCaption}</div>
         ) : null}
 
-        {voicings.length ? (
-          <div className={styles.grid}>
-            {voicings.map((fr, i) => {
-              const g = computeDiagram(fr);
-              const pos = g.showNut ? ko.formOpen : g.start + 'fr';
-              const omitted = omittedLabels(fr);
-              const fc: CollectedChord = {
-                name:
-                  detail.name +
-                  ' (' +
-                  (g.showNut ? 'open' : g.start + 'fr') +
-                  ')',
-                frets: fr,
-                key: detail.name + '-' + i,
-              };
-              return (
-                <div key={i} className={styles.formCard} data-testid="form-card">
-                  <div className={styles.formLabel}>{i + 1 + ' · ' + pos}</div>
-                  <ChordDiagram frets={fr} width={112} variant="tones" />
-                  {omitted.length ? (
-                    <div
-                      className={styles.omitBadge}
-                      data-testid="omit-badge"
-                    >
-                      {ko.omitBadge(omitted.join(', '))}
-                    </div>
-                  ) : null}
-                  <div className={styles.formActions}>
-                    <button
-                      type="button"
-                      className={styles.circBtn}
-                      title={ko.comingSoon}
-                      aria-label={ko.actPlay}
-                      disabled
-                    >
-                      ▶
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.circBtn}
-                      title={ko.actCollect}
-                      aria-label={ko.actCollect}
-                      onClick={() => onCollect(fc)}
-                    >
-                      ♥
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.circBtn}
-                      title={ko.comingSoon}
-                      aria-label={ko.actCopy}
-                      disabled
-                    >
-                      ⧉
-                    </button>
-                  </div>
+        {positions.length ? (
+          positions.map((p) => {
+            // 포지션 헤더 라벨: 그 포지션 첫 폼의 다이어그램 기준(OPEN / Nfr).
+            const headG = computeDiagram(p.forms[0].frets);
+            const posLabel = headG.showNut ? ko.formOpen : headG.start + 'fr';
+            return (
+              <section
+                key={p.pos}
+                className={styles.positionSection}
+                data-testid="position-section"
+              >
+                <div
+                  className={styles.positionHeader}
+                  data-testid="position-header"
+                >
+                  {posLabel}
                 </div>
-              );
-            })}
-          </div>
+                <div className={styles.grid}>
+                  {p.forms.map((form: VoicingForm, i) => {
+                    const g = computeDiagram(form.frets);
+                    const omitted = omittedLabels(form.frets);
+                    // 표준 폼 쉐입 배지 — 'open'은 제외(무버블 바레만 표시).
+                    const showShapeBadge =
+                      form.source === 'template' &&
+                      form.shape !== undefined &&
+                      form.shape !== 'open';
+                    const fc: CollectedChord = {
+                      name:
+                        detail.name +
+                        ' (' +
+                        (g.showNut ? 'open' : g.start + 'fr') +
+                        ')',
+                      frets: form.frets,
+                      key: detail.name + '-' + p.pos + '-' + i,
+                    };
+                    return (
+                      <div
+                        key={p.pos + '-' + i}
+                        className={styles.formCard}
+                        data-testid="form-card"
+                      >
+                        <div className={styles.formLabelRow}>
+                          <span className={styles.formLabel}>
+                            {String(i + 1)}
+                          </span>
+                          {showShapeBadge ? (
+                            <span
+                              className={styles.shapeBadge}
+                              data-testid="shape-badge"
+                            >
+                              {ko.shapeBadge(form.shape as string)}
+                            </span>
+                          ) : null}
+                        </div>
+                        <ChordDiagram
+                          frets={form.frets}
+                          width={112}
+                          variant="tones"
+                        />
+                        {omitted.length ? (
+                          <div
+                            className={styles.omitBadge}
+                            data-testid="omit-badge"
+                          >
+                            {ko.omitBadge(omitted.join(', '))}
+                          </div>
+                        ) : null}
+                        <div className={styles.formActions}>
+                          <button
+                            type="button"
+                            className={styles.circBtn}
+                            title={ko.comingSoon}
+                            aria-label={ko.actPlay}
+                            disabled
+                          >
+                            ▶
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.circBtn}
+                            title={ko.actCollect}
+                            aria-label={ko.actCollect}
+                            onClick={() => onCollect(fc)}
+                          >
+                            ♥
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.circBtn}
+                            title={ko.comingSoon}
+                            aria-label={ko.actCopy}
+                            disabled
+                          >
+                            ⧉
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })
         ) : (
           <div className={styles.empty}>{ko.modalEmpty}</div>
         )}

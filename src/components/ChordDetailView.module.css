@@ -95,12 +95,30 @@
   padding: 2px 8px;
 }
 
-/* 보이싱 그리드 반응형: mobile 2열 → tablet 3열 → desktop 기존 밀도 */
+/* 포지션 섹션: 같은 최저 프렛(포지션)의 폼들을 헤더 아래로 묶는다. */
+.positionSection {
+  margin-top: var(--s-md);
+}
+.positionSection:first-of-type {
+  margin-top: 12px;
+}
+/* 포지션 헤더: OPEN / Nfr 라벨. 낮은 대비 모노 소형 라벨로 프렛 자리를 구분. */
+.positionHeader {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--c-faint);
+  margin-bottom: var(--s-xs);
+}
+
+/* 보이싱 그리드 반응형: mobile 2열 → tablet 3열 → desktop 기존 밀도.
+   각 포지션 섹션 내부의 그리드로 재사용된다(포지션마다 자체 그리드). */
 .grid {
   display: grid;
   gap: var(--s-sm, 12px);
   grid-template-columns: repeat(2, 1fr);
-  margin-top: 12px;
 }
 @media (min-width: 600px) {
   .grid {
@@ -123,11 +141,32 @@
   align-items: center;
   gap: 8px;
 }
+/* 폼 라벨 줄: 포지션 내 순번 + (표준 폼일 때) 쉐입 배지를 나란히. */
+.formLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 .formLabel {
   font-family: var(--f-mono);
   font-size: 11px;
   letter-spacing: 0.4px;
   color: var(--c-faint);
+  white-space: nowrap;
+}
+/* 표준(CAGED) 폼 쉐입 배지: 작은 알약형. 강조색으로 표준 폼임을 알린다. */
+.shapeBadge {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--c-accent);
+  background: var(--c-panel);
+  border: 1px solid var(--c-accent);
+  border-radius: var(--r-pill);
+  padding: 2px 8px;
   white-space: nowrap;
 }
 .formActions {
