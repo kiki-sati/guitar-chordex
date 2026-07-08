@@ -1,35 +1,34 @@
 import { describe, it, expect } from 'vitest';
-import { omittedFormulaPCs } from '../voicing-pcs';
-import { allVoicings } from '../voicing';
+import { omittedInVoicing } from '../voicing-pcs';
 
-describe('omittedFormulaPCs', () => {
-  it('C major (root 0): no omission -> empty set', () => {
-    const voicings = allVoicings(0, 'maj');
-    const omitted = omittedFormulaPCs(0, 'maj', voicings);
+/**
+ * 폼별 생략 판정. 명시적 frets 입력이라 allVoicings 출력 순서·구성에 무의존
+ * (결정적). OPENPC=[4,9,2,7,11,4], 각 현 (OPENPC[s]+fret)%12.
+ */
+describe('omittedInVoicing', () => {
+  it('C9 open form x30330 omits the 5th (G = pc 7)', () => {
+    // s1 f3->0(C); s2 f0->2(D); s3 f3->10(Bb); s4 f3->2(D); s5 f0->4(E)
+    // sounded={0,2,10,4}; C9 formula pcs={0,4,7,10,2}; missing 7(G)
+    const omitted = omittedInVoicing(0, '9', ['x', 3, 0, 3, 3, 0]);
+    expect(omitted.has(7)).toBe(true);
+  });
+
+  it('C9 barre-ish form 850056 sounds the 5th -> G not omitted', () => {
+    // s0 f8->0(C); s1 f5->2(D); s2 f0->2(D); s3 f0->7(G); s4 f5->4(E); s5 f6->10(Bb)
+    // sounded={0,2,7,4,10} = full formula; nothing omitted
+    const omitted = omittedInVoicing(0, '9', [8, 5, 0, 0, 5, 6]);
+    expect(omitted.has(7)).toBe(false);
     expect(omitted.size).toBe(0);
   });
 
-  it('C9 (root 0): 5th (G = pc 7) omitted in every voicing', () => {
-    const voicings = allVoicings(0, '9');
-    const omitted = omittedFormulaPCs(0, '9', voicings);
-    // requiredPCs drops the 5th (interval 7) for 5-note chords, so no
-    // displayed voicing should contain G (pc 7).
-    expect(omitted.has(7)).toBe(true);
+  it('C major x32010 sounds all of {C,E,G} -> nothing omitted', () => {
+    const omitted = omittedInVoicing(0, 'maj', ['x', 3, 2, 0, 1, 0]);
+    expect(omitted.size).toBe(0);
   });
 
-  it('returns pcs that appear in NO displayed voicing', () => {
-    // craft a single voicing that only sounds {C,E} = {0,4}
-    const single = [['x', 3, 2, 'x', 'x', 'x'] as (number | 'x')[]];
-    // formula pretends to require {0,4,7}: 7 (G) is absent -> omitted
-    const omitted = omittedFormulaPCs(0, 'maj', single);
-    expect(omitted.has(7)).toBe(true);
-    expect(omitted.has(0)).toBe(false);
-    expect(omitted.has(4)).toBe(false);
-  });
-
-  it('empty voicing list -> all formula pcs omitted', () => {
-    const omitted = omittedFormulaPCs(0, 'maj', []);
-    // maj = {0,4,7} all omitted
+  it('fully muted voicing omits every formula note', () => {
+    // C major {0,4,7} all absent
+    const omitted = omittedInVoicing(0, 'maj', ['x', 'x', 'x', 'x', 'x', 'x']);
     expect([...omitted].sort((a, b) => a - b)).toEqual([0, 4, 7]);
   });
 });

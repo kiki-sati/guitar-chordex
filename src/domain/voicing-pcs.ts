@@ -16,24 +16,24 @@ export function voicingPitchClasses(frets: FretArray): Set<PitchClass> {
 }
 
 /**
- * 코드 공식(INTERVALS[qual]) 음 중, 표시 중인 어떤 보이싱에서도 울리지 않는
- * 피치클래스 집합. (재즈 관례상 5도 등 비필수음을 생략하는 보이싱이 있으면 여기 잡힘)
- * 판정: 전체 보이싱의 피치클래스 합집합에 없는 공식 음 = 생략된 음.
+ * 코드 공식(INTERVALS[qual]) 음 중, 이 특정 보이싱(frets)에서 울리지 않는
+ * 피치클래스 집합 = 공식 음 − 해당 보이싱의 피치클래스.
+ *
+ * 사용자 혼란은 '개별 폼' 단위에서 생긴다(예: 오픈 C9 x30330 그림에서
+ * 칩의 G를 찾는 상황). allVoicings 합집합이 아니라 폼마다 어떤 공식 음이
+ * 빠졌는지 정확히 판정한다.
  * 도메인 보이싱 로직 무변경 — 순수 read-only 파생 계산.
  */
-export function omittedFormulaPCs(
+export function omittedInVoicing(
   root: RootIndex,
   qual: Quality,
-  voicings: FretArray[],
+  frets: FretArray,
 ): Set<PitchClass> {
-  const sounded = new Set<PitchClass>();
-  for (const v of voicings) {
-    for (const pc of voicingPitchClasses(v)) sounded.add(pc);
-  }
+  const sounded = voicingPitchClasses(frets);
   const iv = INTERVALS[qual] || [0, 4, 7];
   const omitted = new Set<PitchClass>();
   iv.forEach((i) => {
-    const pc = ((root + i) % 12 + 12) % 12;
+    const pc = (((root + i) % 12) + 12) % 12;
     if (!sounded.has(pc)) omitted.add(pc);
   });
   return omitted;

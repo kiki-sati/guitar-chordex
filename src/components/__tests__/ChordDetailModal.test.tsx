@@ -12,43 +12,28 @@ function renderModal(detail: ChordDetail) {
   );
 }
 
-describe('ChordDetailModal — tone chip omission', () => {
-  it('C major: no formula note omitted -> all chips normal, no caption', () => {
-    // C = {C,E,G}; open/barre voicings sound all three.
+describe('ChordDetailModal — per-form omission badge', () => {
+  it('C major: every form sounds all formula notes -> no badge, no caption', () => {
     renderModal({ root: 0, qualKey: 'maj', name: 'C' });
 
-    const chips = screen.getAllByTestId('tone-chip');
-    expect(chips.length).toBeGreaterThan(0);
-    // every chip is NOT flagged as omitted
-    for (const chip of chips) {
-      expect(chip).toHaveAttribute('data-omitted', 'false');
-    }
-    // caption absent
+    // tone chips render the formula as-is
+    expect(screen.getAllByTestId('tone-chip').length).toBeGreaterThan(0);
+    // no form omits a formula note
+    expect(screen.queryAllByTestId('omit-badge')).toHaveLength(0);
     expect(screen.queryByText(ko.tonesOmittedCaption)).toBeNull();
   });
 
-  it('C9: 5th (G) omitted in all forms -> G chip flagged + caption shown', () => {
-    // C9 = {C,E,G,Bb,D}; requiredPCs drops the 5th, so no voicing sounds G.
+  it('C9: at least one form omits the 5th (G) -> "G 생략" badge + caption', () => {
+    // allVoicings(0,'9') includes the open form x30330 which drops G.
     renderModal({ root: 0, qualKey: '9', name: 'C9' });
 
-    const chips = screen.getAllByTestId('tone-chip');
-    const gChip = chips.find(
-      (c) => c.getAttribute('data-tone-name') === 'G',
-    );
-    const cChip = chips.find(
-      (c) => c.getAttribute('data-tone-name') === 'C',
-    );
-    expect(gChip).toBeDefined();
-    expect(cChip).toBeDefined();
+    // order-independent: the badge text "G 생략" is present (one or more cards)
+    expect(screen.getAllByText(ko.omitBadge('G')).length).toBeGreaterThan(0);
 
-    // the G chip is flagged omitted with the tooltip
-    expect(gChip).toHaveAttribute('data-omitted', 'true');
-    expect(gChip).toHaveAttribute('title', ko.toneOmittedTitle);
+    // at least one omit badge rendered
+    expect(screen.getAllByTestId('omit-badge').length).toBeGreaterThan(0);
 
-    // root C is always sounded -> not omitted
-    expect(cChip).toHaveAttribute('data-omitted', 'false');
-
-    // caption present exactly once
+    // caption shown once
     expect(screen.getByText(ko.tonesOmittedCaption)).toBeInTheDocument();
   });
 });
