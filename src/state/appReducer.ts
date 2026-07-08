@@ -1,5 +1,17 @@
 import { dateStr } from '../domain/notes';
 import { ko } from '../i18n/strings';
+import {
+  addMeasure,
+  beatsOf,
+  clearSlot,
+  emptySequence,
+  filledCount,
+  makeSheet,
+  padSlots,
+  placeAt,
+  removeMeasure,
+  retime,
+} from '../domain/sheet';
 import type { PersistedState } from './persist';
 import type {
   Chord,
@@ -11,6 +23,10 @@ import type {
   KeyType,
   RootIndex,
   ScaleType,
+  Sheet,
+  SheetSequence,
+  SheetSlot,
+  TimeSig,
 } from '../domain/types';
 
 export type View =
@@ -46,6 +62,12 @@ export interface AppState {
   jNotes: string;
   dTitle: string;
   dTarget: number;
+  // 악보 빌더 (PR-1) — sheets만 영속(cs_sheets, sheet-persist), 나머지는 트랜션트
+  sheets: Sheet[]; // persisted (별도 cs_sheets 키 — 동기화 무간섭)
+  sequence: SheetSequence; // 트랜션트 (작업 중 악보)
+  armedChord: SheetSlot | null; // 트랜션트 (팔레트에서 고른 코드)
+  timeSig: TimeSig; // 트랜션트
+  sheetTitle: string; // 트랜션트
   // UI 트랜션트
   toast: string;
   detailChord: ChordDetail | null;
@@ -79,10 +101,31 @@ export type Action =
   | { type: 'SET_DRILL_DRAFT'; patch: DrillDraftPatch }
   | { type: 'SHOW_TOAST'; msg: string }
   | { type: 'CLEAR_TOAST' }
+  // 악보 빌더 (PR-1)
+  | { type: 'ARM_CHORD'; chord: SheetSlot }
+  | { type: 'PLACE_AT'; index: number }
+  | { type: 'CLEAR_SLOT'; index: number }
+  | { type: 'ADD_MEASURE' }
+  | { type: 'REMOVE_MEASURE'; measureIndex: number }
+  | { type: 'SET_TIME_SIG'; timeSig: TimeSig }
+  | { type: 'SET_SHEET_TITLE'; title: string }
+  | { type: 'CLEAR_SEQUENCE' }
+  | { type: 'SAVE_SHEET' }
+  | { type: 'LOAD_SHEET'; id: string }
+  | { type: 'DELETE_SHEET'; id: string }
   | { type: 'HYDRATE'; persisted: PersistedState };
 
-/** persisted slice + 트랜션트 기본값으로 초기 상태 구성. */
-export function initState(persisted: PersistedState): AppState {
+/**
+ * persisted slice + 트랜션트 기본값으로 초기 상태 구성.
+ *
+ * `sheets`는 동기화 계층(PersistedState)과 분리된 별도 슬라이스(cs_sheets)이므로
+ * 2번째 인자로 주입한다(sheet-persist.loadSheets() 경유). 미지정 시 빈 배열.
+ * PR-1 결정: 시드 악보 없음 → 첫 진입은 빈 8칸(4/4 2마디)로 시작.
+ */
+export function initState(
+  persisted: PersistedState,
+  sheets: Sheet[] = [],
+): AppState {
   return {
     lang: persisted.lang,
     view: 'home',
@@ -102,6 +145,11 @@ export function initState(persisted: PersistedState): AppState {
     jNotes: '',
     dTitle: '',
     dTarget: 5,
+    sheets,
+    sequence: emptySequence(beatsOf('4/4')),
+    armedChord: null,
+    timeSig: '4/4',
+    sheetTitle: '',
     toast: '',
     detailChord: null,
   };
@@ -263,6 +311,97 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, toast: action.msg };
     case 'CLEAR_TOAST':
       return { ...state, toast: '' };
+
+    // ── 악보 빌더 (PR-1) — 계산은 domain/sheet.ts 위임, reducer 순수 유지 ──
+    case 'ARM_CHORD': {
+      // 같은 코드 재클릭 → 해제(토글). 원본 armChord (라인 459): name + frets JSON 비교.
+      const a = state.armedChord;
+      const same =
+        !!a &&
+        a.name === action.chord.name &&
+        JSON.stringify(a.frets) === JSON.stringify(action.chord.frets);
+      return {
+        ...state,
+        armedChord: same
+          ? null
+          : { name: action.chord.name, frets: action.chord.frets },
+      };
+    }
+    case 'PLACE_AT': {
+      // armed 있음 → 배치 / 없음 + 채워짐 → 비우기 / 없음 + 빈칸 → 안내 토스트 (원본 beatCell 라인 631).
+      if (state.armedChord) {
+        return {
+          ...state,
+          sequence: placeAt(state.sequence, action.index, state.armedChord),
+        };
+      }
+      if (state.sequence[action.index]) {
+        return {
+          ...state,
+          sequence: clearSlot(state.sequence, action.index),
+        };
+      }
+      return { ...state, toast: ko.builderSelectFirst };
+    }
+    case 'CLEAR_SLOT':
+      return { ...state, sequence: clearSlot(state.sequence, action.index) };
+    case 'ADD_MEASURE':
+      return {
+        ...state,
+        sequence: addMeasure(state.sequence, beatsOf(state.timeSig)),
+      };
+    case 'REMOVE_MEASURE':
+      return {
+        ...state,
+        sequence: removeMeasure(
+          state.sequence,
+          action.measureIndex,
+          beatsOf(state.timeSig),
+        ),
+      };
+    case 'SET_TIME_SIG':
+      return {
+        ...state,
+        timeSig: action.timeSig,
+        sequence: retime(state.sequence, beatsOf(action.timeSig)),
+      };
+    case 'SET_SHEET_TITLE':
+      return { ...state, sheetTitle: action.title };
+    case 'CLEAR_SEQUENCE':
+      return { ...state, sequence: emptySequence(beatsOf(state.timeSig)) };
+    case 'SAVE_SHEET': {
+      // 채워진 박 0개면 토스트 후 중단 (원본 saveSheet 라인 468).
+      if (filledCount(state.sequence) === 0) {
+        return { ...state, toast: ko.builderNeedChord };
+      }
+      const sheet = makeSheet(
+        state.sheetTitle || ko.builderUntitled,
+        state.sequence,
+        state.timeSig,
+        dateStr(new Date()),
+      );
+      return {
+        ...state,
+        sheets: [sheet, ...state.sheets],
+        toast: ko.builderSaved,
+      };
+    }
+    case 'LOAD_SHEET': {
+      const sh = state.sheets.find((x) => x.id === action.id);
+      if (!sh) return state;
+      return {
+        ...state,
+        sequence: padSlots(sh.seq, beatsOf(sh.timeSig)),
+        timeSig: sh.timeSig,
+        sheetTitle: sh.title,
+        toast: ko.builderLoaded(sh.title),
+      };
+    }
+    case 'DELETE_SHEET':
+      return {
+        ...state,
+        sheets: state.sheets.filter((s) => s.id !== action.id),
+      };
 
     case 'HYDRATE':
       // 서버 pull/merge 결과로 persisted 4슬라이스 + lang만 교체.
