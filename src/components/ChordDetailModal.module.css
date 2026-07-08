@@ -53,7 +53,7 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 .tone {
   font-family: var(--f-mono);
@@ -64,6 +64,25 @@
   border: 1px solid var(--c-border);
   border-radius: var(--r-pill);
   padding: 4px 11px;
+}
+.tonesCaption {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  color: var(--c-faint);
+  margin-bottom: 20px;
+}
+/* 폼별 생략 배지: 해당 폼이 공식 음을 생략할 때만 카드에 표시 */
+.omitBadge {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--c-faint);
+  background: var(--c-panel);
+  border: 1px dashed var(--c-border);
+  border-radius: var(--r-pill);
+  padding: 2px 8px;
 }
 .grid {
   display: grid;
