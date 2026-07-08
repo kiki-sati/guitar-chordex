@@ -1,45 +1,29 @@
-.scrim {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 80;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 40px 20px;
-  overflow-y: auto;
-}
-.modal {
+.screen {
+  min-height: 100%;
   background: #fff;
-  border-radius: var(--r-lg);
-  max-width: 720px;
-  width: 100%;
-  padding: 28px 30px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-}
-.header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 8px;
+  flex-direction: column;
 }
-.eyebrow {
-  font-family: var(--f-mono);
-  font-size: 12px;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--c-faint);
-  margin-bottom: 6px;
+
+/* 상단 앱바 — 스크롤해도 상단 고정. 세이프에어리어는 셸(.shell)이 이미 제공하므로
+   여기서 inset-top을 재적용하지 않는다(이중 패딩 방지, AC-13). */
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--s-xs);
+  padding: 10px 12px;
+  background: #fff;
+  border-bottom: 1px solid var(--c-border);
 }
-.title {
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-}
-.close {
-  width: 40px;
-  height: 40px;
+.appbarBtn {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--r-full);
   border: 1px solid var(--c-border);
   background: #fff;
@@ -48,6 +32,32 @@
   font-size: 20px;
   line-height: 1;
   flex: none;
+}
+.appbarTitle {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin-right: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 데스크톱: 기존 모달 폭(720px) 중앙 정렬 → 초광폭에서 그리드가 늘어지지 않음 */
+.content {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 16px 56px;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--c-faint);
+  margin-bottom: 10px;
 }
 .tones {
   display: flex;
@@ -84,11 +94,25 @@
   border-radius: var(--r-pill);
   padding: 2px 8px;
 }
+
+/* 보이싱 그리드 반응형: mobile 2열 → tablet 3열 → desktop 기존 밀도 */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-  gap: 12px;
+  gap: var(--s-sm, 12px);
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 12px;
 }
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  }
+}
+
 .formCard {
   border: 1px solid var(--c-border);
   border-radius: var(--r-card);
@@ -121,10 +145,24 @@
   background: #fff;
   color: var(--c-muted);
   cursor: pointer;
+  /* 시각 원형은 34px 유지, 탭 히트 영역은 44px로 확장 (AC-12) */
+  position: relative;
+}
+.circBtn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
 }
 .circBtn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+.circBtn:disabled::after {
+  display: none;
 }
 .empty {
   padding: 30px;

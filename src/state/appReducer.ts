@@ -35,7 +35,8 @@ export type View =
   | 'scales'
   | 'practice'
   | 'builder'
-  | 'lesson';
+  | 'lesson'
+  | 'chordDetail';
 export type DictMode = 'key' | 'root';
 export type HomeLayout = 'focus' | 'board' | 'minimal';
 
@@ -71,6 +72,7 @@ export interface AppState {
   // UI 트랜션트
   toast: string;
   detailChord: ChordDetail | null;
+  detailReturnView: View; // 상세 진입 직전 뷰 (CLOSE_DETAIL 복귀 대상)
 }
 
 export type JournalDraftPatch = Partial<
@@ -152,6 +154,7 @@ export function initState(
     sheetTitle: '',
     toast: '',
     detailChord: null,
+    detailReturnView: 'dictionary',
   };
 }
 
@@ -187,9 +190,18 @@ export function reducer(state: AppState, action: Action): AppState {
           qualKey: action.chord.qualKey,
           name: action.chord.name,
         },
+        // 재진입 가드: 이미 상세 화면이면 원래 진입 뷰 유지(chordDetail로 덮이지 않음)
+        detailReturnView:
+          state.view === 'chordDetail' ? state.detailReturnView : state.view,
+        view: 'chordDetail',
       };
     case 'CLOSE_DETAIL':
-      return { ...state, detailChord: null };
+      // 상세가 아닐 때 호출돼도 안전(멱등): view가 chordDetail일 때만 복귀
+      return {
+        ...state,
+        detailChord: null,
+        view: state.view === 'chordDetail' ? state.detailReturnView : state.view,
+      };
 
     case 'COLLECT': {
       const exists = state.collected.some((c) => c.name === action.chord.name);
