@@ -16,6 +16,12 @@ export interface SyncEngineDeps {
   local: LocalRepository;
   /** 오프라인 큐. */
   queue: SyncQueue;
+  /**
+   * 취소 가드(선택 · 하위호환). dispose 후 **늦게 resolve되는** in-flight 작업이
+   * localStorage(캐시·큐)를 다시 쓰는 것을 막는다(부활 방지 — AC⑤-9 공유기기 프라이버시).
+   * 미지정 시 취소 없음(기존 동작 불변). SyncRepo가 `() => this.disposed`를 전달한다.
+   */
+  isCancelled?: () => boolean;
 }
 
 /**
@@ -59,6 +65,9 @@ export async function initialSync(deps: SyncEngineDeps): Promise<PersistedState>
   const cache = local.loadAll();
   const pending = queue.list().map((i) => i.change);
   const merged = mergePersisted(server, cache, pending);
+  // dispose 후 늦게 resolve된 경우: 로그아웃으로 지워진 캐시를 saveAll이 부활시키지
+  // 않도록 기록 직전에 취소를 확인한다(AC⑤-9). merged는 통지 없이 반환.
+  if (deps.isCancelled?.()) return merged;
   local.saveAll(merged);
   return merged;
 }
@@ -72,6 +81,8 @@ export async function flushQueue(deps: SyncEngineDeps): Promise<void> {
   const items = queue.list();
   const succeeded: string[] = [];
   for (const item of items) {
+    // 각 반복 시작에서 취소 확인: dispose(로그아웃) 후 stale 토큰 push 중단(AC⑤-9).
+    if (deps.isCancelled?.()) return;
     try {
       await pushChange(remote, item.change);
       succeeded.push(item.id);
@@ -79,5 +90,7 @@ export async function flushQueue(deps: SyncEngineDeps): Promise<void> {
       /* 실패 항목은 잔류 → 다음 flush/online에서 재시도(멱등 upsert). */
     }
   }
+  // 로그아웃으로 지워진 큐 키를 remove(write)가 부활시키지 않도록 기록 직전 재확인.
+  if (deps.isCancelled?.()) return;
   if (succeeded.length > 0) queue.remove(succeeded);
 }
