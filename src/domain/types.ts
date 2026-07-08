@@ -38,6 +38,23 @@ export interface VoicingCandidate {
   score: number; // 낮을수록 우수
 }
 
+// ── 다형(多形) 보이싱 노출 (voicingsByPosition) ──
+// 무버블 CAGED 쉐입명 + 개방폼. template 폼의 라벨용(선택).
+export type VoicingShapeName = 'E' | 'A' | 'D' | 'C' | 'G' | 'open';
+
+// 한 폼 = frets + 출처(표준 CAGED template vs enum 열거) + (선택) 쉐입명.
+export interface VoicingForm {
+  frets: FretArray; // length 6, Fret 유니온
+  source: 'template' | 'enum'; // 표준(CAGED) 폼 여부 — 정렬·라벨용
+  shape?: VoicingShapeName; // template일 때 쉐입명(라벨용, 선택)
+}
+
+// 한 포지션(같은 최저 프렛) 그룹 — 상세 화면이 포지션 헤더로 렌더.
+export interface VoicingPosition {
+  pos: number; // 다이어그램 시작 프렛 기준 위치 (mx>0?mn:0), 0=개방
+  forms: VoicingForm[]; // 이 포지션의 폼들 (실전성 순, 최대 N개)
+}
+
 // ── 다이어그램 기하 (computeDiagram 반환) ──
 export interface DiagramMarker {
   s: number;

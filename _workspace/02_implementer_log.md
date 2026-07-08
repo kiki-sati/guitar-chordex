@@ -158,3 +158,40 @@ i18n: `src/i18n/strings.ts`
 - `src/sync/syncEngine.ts` — `SyncEngineDeps.isCancelled?` 추가 + initialSync·flushQueue 가드.
 - `src/state/sync-repository.ts` — `disposed` 필드 + dispose/apply/enqueue/start 가드 + JSDoc 갱신.
 - `src/state/__tests__/sync-repository.test.ts` — 새 describe 4건 + 헬퍼/import(`clearUserCache`/`userCacheKeys`/`queueKey`).
+
+## 보이싱 다형 노출 — 도메인 단계 (PR 1/2, `feat/voicing-forms`, 2026-07-08)
+
+> 입력: `_workspace/27_voicing_forms_plan.md` §도메인(Step 1~4)만. UI(Step 5~6)는 별도 PR.
+> 오케스트레이터 확정 파라미터: **N=3/pos, M=16 총, pos≥5 개방혼합 배제**, 정렬 template>루트베이스>풀보이싱>개방혼합>frets 사전순.
+> 방법: TDD(Red→Green). 골든 기대값은 트레이스 스크립트로 파이프라인 실행 후 확정(손 추정 금지).
+
+### Step 1 — 타입 + CAGED 템플릿 (`feat(voicing): CAGED movable shape templates + transpose` 취지)
+- `src/domain/types.ts`(additive): `VoicingShapeName`/`VoicingForm{frets,source,shape?}`/`VoicingPosition{pos,forms}` 추가. 기존 `VoicingCandidate` 유지.
+- `src/domain/voicing-shapes.ts`(신규): `MovableShape` 타입 + `CAGED_SHAPES`(maj/min/7/maj7/m7/sus4 각 E/A/D쉐입 + m7b5 A쉐입) + `ROOT_STRING_SHAPE=['E','A','D']` + `transposeShape(shape,root)`(barre + barre+12 두 옥타브). 오프셋은 chord.ts E_SHAPES/A_SHAPES와 동일 수치(대조 완료), D쉐입만 신규.
+- 골든(`voicing-shapes.test.ts`, 10건): Cmaj7 A쉐입→`[x,3,5,4,5,3]`, Cmaj7 E쉐입→`[8,10,9,9,8,8]`, F maj E쉐입→`[1,3,3,2,1,1]`, B m7 A쉐입→`[x,2,4,2,3,2]`, G7 E쉐입→`[3,5,3,4,3,3]`, B♭ maj A쉐입→`[x,1,3,3,3,1]`, E♭ min D쉐입→`[x,x,1,3,4,2]`, +12 옥타브·뮤트 보존·오프셋 대조.
+
+### Step 2 — voicingsByPosition 코어 (`feat(voicing): position-grouped multi-form voicings` 취지)
+- `src/domain/voicing.ts`: `voicingsByPosition(root,qual): VoicingPosition[]` 신설. 파이프라인 = 템플릿 트랜스포즈(+MAX_TEMPLATE_FRET=14 컷오프) → collect 필터 → enum 병합 → 완전중복 dedup(template 우선) → pos≥5 개방혼합 큐레이션 → 포지션 그룹핑 → 포지션 내 5키 정렬 + 유사폼 dedup(동일 pcs + 요소차합≤1) + slice N → 전체 slice M. 상수 `MAX_FORMS_PER_POS=3`/`MAX_TOTAL_FORMS=16` export, `OPEN_MIX_CUTOFF_POS=5`/`MAX_TEMPLATE_FRET=14` 모듈 내부.
+- 신규 `posCache` + `__clearVoicingCache()` 확장(bestCache/allCache/posCache).
+- 골든(`voicing-forms.test.ts`, 15건): 표준 폼 포함(x35453 필수·CAGED 대표 6케이스·A3 12루트×5quality template≥1)·다형(B1)·상한 N≤3/M≤16(B2)·중복0(B3)·pos 유일·음악타당성 전수(C1)·비실전 배제(C2 `0,14,14,...` 부재·pos≥5 개방0 부재)·결정론(D1 캐시클리어 deep equal·D2 pos3 tie-break 순서 고정).
+
+### Step 3 — allVoicings 어댑터화 (`refactor(voicing): allVoicings as flat adapter over positions` 취지)
+- `allVoicings`를 `voicingsByPosition(...).flatMap(p=>p.forms.map(f=>f.frets))` 어댑터로 전환(@deprecated). allCache 유지.
+- `voicing.test.ts` 갱신(§8.1): "≤10"→`MAX_TOTAL_FORMS`(16), "no duplicate positions"(옛 계약, 다형으로 의미 변경) → **삭제/재작성**: pos 유일성은 voicingsByPosition 그룹 키 수준에서만 보장. 어댑터 계약(골든 9) `allVoicings === flatMap(voicingsByPosition)` 추가. sort-ascending·req-pcs 계약 유지.
+
+### Step 4 — 도메인 회귀 스위프 (E1/골든10)
+- **E1 검증(바이트 불변)**: `bestVoicing`/`enumBase`/`collect` 함수 본문을 origin/main과 diff → **전부 IDENTICAL**. `buildChord`(chord.ts) 무변경 → 카드 대표 폼 무영향.
+- **골든10/모달 회귀**: `omitted-tones.test.ts`(4건)·`ChordDetailModal.test.tsx`(2건) 그린. C9의 G 생략 배지: 새 `allVoicings(0,'9')` 폼 중 다수가 G(pc7) 생략 → 배지 케이스 유지(실측 확인).
+
+### 검증 (실제 명령 출력 — 최종 커밋 상태)
+- `npx tsc -b`: **통과** (TSC_EXIT=0)
+- `npm test`(vitest run): **570 tests passed (59 files)**, 실패 0
+- `npm run build`: **통과** (BUILD_EXIT=0, 204 modules transformed)
+
+### 변경 파일 (도메인 PR)
+- `src/domain/types.ts` — VoicingShapeName/VoicingForm/VoicingPosition 추가(additive).
+- `src/domain/voicing-shapes.ts` — 신규(CAGED_SHAPES + transposeShape + ROOT_STRING_SHAPE).
+- `src/domain/voicing.ts` — voicingsByPosition 신설 · allVoicings 어댑터화(deprecated) · posCache · MAX_* 상수. bestVoicing/enumBase/collect 무변경.
+- `src/domain/__tests__/voicing-shapes.test.ts` — 신규(10건).
+- `src/domain/__tests__/voicing-forms.test.ts` — 신규(15건).
+- `src/domain/__tests__/voicing.test.ts` — §8.1 계약 갱신(dup-pos 재작성·상한 16·어댑터 계약).
