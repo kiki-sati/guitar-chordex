@@ -12,6 +12,7 @@ import { HomeView } from './views/HomeView';
 import { DictionaryView } from './views/DictionaryView';
 import { ScalesView } from './views/ScalesView';
 import { PracticeView } from './views/PracticeView';
+import { BuilderView } from './views/BuilderView';
 import { stats } from './domain/practice';
 import { headerTitles, ko } from './i18n/strings';
 import styles from './App.module.css';
@@ -51,8 +52,11 @@ function Shell() {
     case 'practice':
       view = <PracticeView />;
       break;
+    case 'builder':
+      view = <BuilderView />;
+      break;
     default:
-      // builder/lesson는 MVP 비활성 → 도달 불가, 안전 폴백
+      // lesson는 아직 비활성 → 도달 불가, 안전 폴백
       view = <HomeView />;
   }
 

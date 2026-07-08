@@ -126,3 +126,35 @@ i18n: `src/i18n/strings.ts`
 
 ## 검증 결과
 - `npx tsc -b`: **0** (strict). `npm test`(vitest run): **455 passed / 48 files, 0 fail**(신규 102 포함). `npm run build`: (하단 최종 라인 참조).
+## 수정: SyncRepo.dispose() in-flight 쓰기 취소 (2026-07-08, 교차 이음새 QA / AC⑤-9)
+
+> 방법: react-tdd-implementation (Red→Green). 입력: 오케스트레이터 확정 설계 + 2026-07-03 교차 이음새 QA(BLOCKING).
+
+### 버그
+`dispose()`가 online 리스너만 해제하고 `start()`가 띄운 in-flight 비동기 작업(`initialSync`·`flushQueue`)과 in-flight `apply`를 취소하지 못했다. 로그아웃 시 `clearUserCache(uid)`가 캐시(`u:{uid}:cs_*`)·큐(`u:{uid}:cs_queue`)를 물리 삭제한 뒤에도, 늦게 resolve된 `initialSync`가 `local.saveAll(merged)`로 캐시를, 늦게 resolve된 `flushQueue`가 `queue.remove()`(내부 `write`)로 큐 키를 부활시켜 **AC⑤-9(공유기기 프라이버시) 위반**.
+
+### 설계 결정
+- 부활을 실제로 일으키는 `saveAll`/`queue.remove`는 **syncEngine 함수 내부**에서 실행되므로 SyncRepo의 `.then` 가드만으로는 못 막는다 → **취소 시그널을 syncEngine까지 전달**.
+- `SyncEngineDeps.isCancelled?: () => boolean` 선택 필드 추가(하위호환·React 무의존 유지). 미지정 시 기존 동작 불변.
+  - `initialSync`: `mergePersisted` 후 `local.saveAll(merged)` **직전** 가드(취소 시 merged만 반환, 통지 없음).
+  - `flushQueue`: for 루프 각 반복 시작 가드(취소 후 stale 토큰 push 중단) + `queue.remove(succeeded)` **직전** 가드.
+- `SyncRepo`: `private disposed = false;` 추가. `dispose()`에서 `disposed=true`(기존 unsub 해제·멱등 유지). 세 engine 호출부에 `isCancelled: () => this.disposed` 전달. `.then(onMerged)` → `.then((merged) => { if (!this.disposed) onMerged(merged); })`. `apply()` 진입부 `if (this.disposed) return;`. `enqueue()` 진입부 `if (this.disposed) return;`(in-flight apply 실패 폴백 enqueue의 큐 부활 차단).
+- 도메인 불변값(Quality/Fret/보이싱)·public API 시그니처 불변(옵셔널 추가만).
+
+### 테스트 (src/state/__tests__/sync-repository.test.ts — 새 describe 4건)
+`deferred<T>()`/`settle()`/`expectUserCacheCleared()` 헬퍼 추가(기존 base/makeRemote/setOnline/UID/GRASS_CHANGE 재사용).
+1. `late initialSync must not resurrect user cache after logout clear` — loadAll deferred → dispose → clearUserCache → resolve → `userCacheKeys(UID)` 전부 부재 + onMerged 미호출.
+2. `late flushQueue must not resurrect the queue key after logout clear` — 오프라인 apply 큐 1건 → 온라인 → saveGrass deferred → start(flush) → dispose → clearUserCache → resolve → 큐 키 부재.
+3. `in-flight apply push failure must not re-enqueue after logout clear` — saveGrass deferred reject → apply in-flight → dispose → clearUserCache → reject → 큐 키 부재.
+4. `apply after dispose is a no-op (no cache write, no remote call)` — dispose 후 apply → 캐시 부재 + remote 미호출.
+- Red: 4건 전부 실패 확인 → Green: 4건 통과. 기존 B5-S1~S6 회귀 0. syncEngine 테스트(11건) 회귀 0.
+
+### 검증 (실제 명령 출력)
+- `npx tsc -b`: **통과** (TSC_EXIT=0)
+- `npx vitest run`: **357 tests passed (45 files)**, 실패 0 (기존 353 + 신규 4)
+- `npm run build`: **통과** (BUILD_EXIT=0, 183 modules transformed)
+
+### 변경 파일
+- `src/sync/syncEngine.ts` — `SyncEngineDeps.isCancelled?` 추가 + initialSync·flushQueue 가드.
+- `src/state/sync-repository.ts` — `disposed` 필드 + dispose/apply/enqueue/start 가드 + JSDoc 갱신.
+- `src/state/__tests__/sync-repository.test.ts` — 새 describe 4건 + 헬퍼/import(`clearUserCache`/`userCacheKeys`/`queueKey`).

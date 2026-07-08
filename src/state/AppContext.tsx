@@ -16,6 +16,7 @@ import {
 } from './repository';
 import type { PersistedState } from './persist';
 import { diffChanges } from './diff-changes';
+import { loadSheets, saveSheets } from './sheet-persist';
 
 interface AppContextValue {
   state: AppState;
@@ -54,8 +55,10 @@ export function AppProvider({ children, repository }: AppProviderProps) {
   );
   const async = isAsyncRepository(repo);
 
+  // sheets는 동기화 계층(PersistedState)과 분리된 로컬 전용 슬라이스(cs_sheets, PR-1).
+  // repo와 무관하게 sheet-persist에서 로드한다(로그인 유저도 로컬만 — 계획 §6.3 Q5).
   const [state, dispatch] = useReducer(reducer, undefined, () =>
-    initState(async ? repo.loadCached() : repo.loadAll()),
+    initState(async ? repo.loadCached() : repo.loadAll(), loadSheets()),
   );
 
   // HYDRATE로 인한 상태 변경은 push 대상이 아니다(서버에서 온 값 재푸시 방지).
@@ -106,6 +109,17 @@ export function AppProvider({ children, repository }: AppProviderProps) {
     state.collected,
     state.lang,
   ]);
+
+  // 악보(sheets) 영속화: cs_sheets 로컬 전용 — **동기화 경로와 완전 분리**(PR-1, 계획 §6.3).
+  // repo(SyncRepo/LocalRepository)를 거치지 않으므로 서버로 새지 않는다. 첫 마운트는 skip.
+  const sheetsFirstRun = useRef(true);
+  useEffect(() => {
+    if (sheetsFirstRun.current) {
+      sheetsFirstRun.current = false;
+      return;
+    }
+    saveSheets(state.sheets);
+  }, [state.sheets]);
 
   // 토스트 자동 소거 (1.9s, 원본 라인 450)
   useEffect(() => {
