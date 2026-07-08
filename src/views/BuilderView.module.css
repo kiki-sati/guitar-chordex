@@ -1,0 +1,14 @@
+/* 원본 라인 668: 단일 컬럼 스택, gap 20, maxWidth 1000 */
+.stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  max-width: 1000px;
+}
+/* 원본 라인 670: 팔레트 섹션 타이틀 */
+.paletteTitle {
+  font-size: 13px;
+  font-weight: 640;
+  margin-bottom: 11px;
+  color: var(--c-muted);
+}

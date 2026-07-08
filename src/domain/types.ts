@@ -109,6 +109,27 @@ export interface CollectedChord {
   key: string;
 }
 
+// ── 악보 빌더 (Sheet Builder) ──
+// 박자표: beatsOf 4/4→4, 3/4→3, 6/8→6 (원본 라인 457)
+export type TimeSig = '4/4' | '3/4' | '6/8';
+
+// 한 박(beat) 슬롯: 배치된 코드 또는 빈 칸(null).
+// DrillSeqItem/CollectedChord와 동일한 {name, frets} 부분 구조 공유(불변 — PR-2 드릴 연동 정합).
+export interface SheetSlot {
+  name: string;
+  frets: FretArray;
+}
+export type SheetSequence = (SheetSlot | null)[]; // sparse 포함
+
+// 저장된 악보 (원본 saveSheet 형태, 라인 468)
+export interface Sheet {
+  id: string; // 'sh' + Date.now()
+  title: string;
+  seq: SheetSequence; // sparse 포함
+  timeSig: TimeSig;
+  date: string; // 'YYYY-MM-DD'
+}
+
 // ── 다이어그램 렌더 variant ──
 export type DiagramVariant = 'dots' | 'tones';
 

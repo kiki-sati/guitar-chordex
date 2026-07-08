@@ -123,7 +123,11 @@ export function HomeView() {
               </span>
             ))}
           </div>
-          <button type="button" className={styles.builderBtn} disabled title={ko.comingSoon}>
+          <button
+            type="button"
+            className={styles.builderBtn}
+            onClick={() => dispatch({ type: 'SET_VIEW', view: 'builder' })}
+          >
             {ko.homeToBuilder}
           </button>
         </div>

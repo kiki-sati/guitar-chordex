@@ -17,7 +17,7 @@ const NAV_DEFS: NavDef[] = [
   { key: 'home', label: ko.navHome, icon: 'M3 9.5 12 3l9 6.5V21H3z', disabled: false },
   { key: 'dictionary', label: ko.navDictionary, icon: 'M5 4h12a2 2 0 0 1 2 2v15H7a2 2 0 0 1-2-2zM5 4v13', disabled: false },
   { key: 'scales', label: ko.navScales, icon: 'M4 7h16M4 12h16M4 17h16', disabled: false },
-  { key: 'builder', label: ko.navBuilder, icon: 'M9 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0zM9 18V5l11-2v11M20 14a3 3 0 1 0-6 0 3 3 0 0 0 6 0z', disabled: true },
+  { key: 'builder', label: ko.navBuilder, icon: 'M9 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0zM9 18V5l11-2v11M20 14a3 3 0 1 0-6 0 3 3 0 0 0 6 0z', disabled: false },
   { key: 'practice', label: ko.navPractice, icon: 'M4 5h16v16H4zM4 9h16M9 3v4M15 3v4M8 14h2M14 14h2', disabled: false },
   { key: 'lesson', label: ko.navLesson, icon: 'M22 10 12 5 2 10l10 5 10-5zM6 12v5c0 2 3 3 6 3s6-1 6-3v-5', disabled: true },
 ];

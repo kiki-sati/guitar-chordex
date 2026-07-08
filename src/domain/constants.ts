@@ -4,6 +4,7 @@ import type {
   Fret,
   ScaleType,
   ChordGroup,
+  TimeSig,
 } from './types';
 
 // ── 12음 (원본 라인 172) ──
@@ -152,3 +153,6 @@ export const OPENPC: readonly number[] = [4, 9, 2, 7, 11, 4];
 
 // ── 개방현 MIDI (보이싱/오디오용; 원본 _enumBase/_collect), 6→1번줄 ──
 export const OPEN_MIDI: readonly number[] = [40, 45, 50, 55, 59, 64];
+
+// ── 악보 빌더 박자표 → 박(beat) 수 (원본 beatsOf, 라인 457) ──
+export const BEATS: Record<TimeSig, number> = { '4/4': 4, '3/4': 3, '6/8': 6 };

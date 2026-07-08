@@ -17,21 +17,24 @@ describe('App shell', () => {
     expect(screen.getByText('🔥 STREAK')).toBeInTheDocument();
   });
 
-  it('navigates between the 4 active views', async () => {
+  it('navigates between the 5 active views', async () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole('button', { name: /코드 사전/ }));
     expect(screen.getByPlaceholderText(/코드 검색/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /스케일/ }));
     expect(screen.getByText('루트음')).toBeInTheDocument();
+    // 악보 만들기(builder) 활성 (PR-1) — 사이드바에서 이동 시 빌더 뷰 렌더
+    await user.click(screen.getByRole('button', { name: '악보 만들기' }));
+    expect(screen.getByText('담은 코드 · 클릭해서 선택')).toBeInTheDocument();
     // exact match: the practice NAV button (header has "오늘 연습 기록")
     await user.click(screen.getByRole('button', { name: '연습 기록' }));
     expect(screen.getByText(/연속 연습 중/)).toBeInTheDocument();
   });
 
-  it('disables builder and lesson nav buttons', () => {
+  it('enables the builder nav button but keeps lesson disabled', () => {
     render(<App />);
-    expect(screen.getByRole('button', { name: /악보 만들기/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /악보 만들기/ })).toBeEnabled();
     expect(screen.getByRole('button', { name: /레슨 기록/ })).toBeDisabled();
   });
 

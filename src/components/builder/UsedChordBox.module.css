@@ -1,0 +1,26 @@
+/* 원본 라인 625: 1.5px ink 경계, 라운딩 14, marginBottom 22 */
+.box {
+  border: 1.5px solid var(--c-ink);
+  border-radius: 14px;
+  padding: 18px 16px 14px;
+  margin-bottom: 22px;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+}
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 78px;
+}
+.name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--c-ink);
+  letter-spacing: -0.01em;
+}
