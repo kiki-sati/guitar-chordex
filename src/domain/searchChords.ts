@@ -2,11 +2,12 @@ import type { Quality, RootIndex } from './types';
 import { QUALS, SUF, NOTE } from './constants';
 import { QUALITY_ALIASES } from './aliases';
 import { normalizeChordText } from './normalize';
+import { parseChordName } from './parseChordName';
 
 export interface ChordSearchHit {
   root: RootIndex;
   qualKey: Quality;
-  bass?: RootIndex; // PR-B(슬래시)에서 활성. PR-A에서는 항상 undefined.
+  bass?: RootIndex; // ★PR-B 활성: 슬래시 쿼리(`X/Y`)의 베이스. 비슬래시는 undefined.
 }
 
 // ── 루트별 이명동음 표기 (검색 관대성) ──
@@ -64,12 +65,23 @@ function buildIndex(): IndexEntry[] {
  * - 정규형 부분일치(현 UX 유지): 정규화된 query가 인덱스 문자열의 부분열이면 히트.
  * - 별칭·괄호·`Δ`·`♭/♯`·케이스 흡수(normalizeChordText + 별칭 인덱싱).
  * - 이명동음 루트(`Bb`=`A#`) 양쪽 수용, 표시명은 소비 측에서 canonical 유지.
- * - 슬래시(`/`) 쿼리는 PR-A에서 미지원 → 히트 없음(PR-B에서 처리). 인덱스에 `/`가 없어 자연히 빈 결과.
+ * - 슬래시(`/`) 쿼리(★PR-B): `parseChordName`으로 파싱해 단일 히트(bass 포함) 반환.
+ *   파싱 실패 시 빈 결과(잘못된 슬래시보다 미지원이 명확). 비슬래시 경로는 무변경.
  *
  * 반환 순서: root 오름차순 → QUALS 정의 순서. (root,qual) 중복 제거.
  */
 export function searchChords(query: string): ChordSearchHit[] {
-  const q = normalizeChordText(query.trim());
+  const trimmed = query.trim();
+  // 슬래시 쿼리 → 파서 경로(단일 히트).
+  if (trimmed.includes('/')) {
+    const parsed = parseChordName(trimmed);
+    if (parsed && parsed.bass !== undefined) {
+      return [{ root: parsed.root, qualKey: parsed.qualKey, bass: parsed.bass }];
+    }
+    return [];
+  }
+
+  const q = normalizeChordText(trimmed);
   if (q === '') return [];
 
   const seen = new Set<string>(); // `${root}|${qual}` 중복 제거

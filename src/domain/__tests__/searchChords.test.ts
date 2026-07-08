@@ -97,9 +97,23 @@ describe('searchChords — superset of legacy inline algorithm (no regression)',
   }
 });
 
-describe('searchChords — slash query deferred to PR-B', () => {
-  it('slash query returns no hits (no crash) in PR-A', () => {
-    expect(searchChords('G/B')).toEqual([]);
-    expect(searchChords('Gadd2/B')).toEqual([]);
+describe('searchChords — slash query (PR-B)', () => {
+  it('G/B → single hit root G maj, bass B', () => {
+    expect(searchChords('G/B')).toEqual([{ root: 7, qualKey: 'maj', bass: 11 }]);
+  });
+  it('Gadd2/B → single hit root G add9, bass B', () => {
+    expect(searchChords('Gadd2/B')).toEqual([{ root: 7, qualKey: 'add9', bass: 11 }]);
+  });
+  it('Ab/C → single hit root G#(8) maj, bass C(0)', () => {
+    expect(searchChords('Ab/C')).toEqual([{ root: 8, qualKey: 'maj', bass: 0 }]);
+  });
+  it('C/D on-chord → single hit root C maj, bass D', () => {
+    expect(searchChords('C/D')).toEqual([{ root: 0, qualKey: 'maj', bass: 2 }]);
+  });
+  it('AM7/B → case-sensitive body maj7 + bass B', () => {
+    expect(searchChords('AM7/B')).toEqual([{ root: 9, qualKey: 'maj7', bass: 11 }]);
+  });
+  it('invalid slash bass (G/H) → no hits', () => {
+    expect(searchChords('G/H')).toEqual([]);
   });
 });

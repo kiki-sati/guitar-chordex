@@ -27,6 +27,7 @@ export interface Chord {
   frets: FretArray; // 6칸
   root: RootIndex; // 0..11
   qualKey: Quality;
+  bass?: RootIndex; // ★슬래시 베이스 PC(0..11). undefined=일반 코드 (PR-B)
   key: string; // = name (리스트 key 용도, 원본 호환)
   roman?: string; // diatonic()에서만 부여 (예: 'Imaj7')
 }
@@ -163,4 +164,5 @@ export interface ChordDetail {
   root: RootIndex;
   qualKey: Quality;
   name: string;
+  bass?: RootIndex; // ★슬래시 베이스 PC(0..11). 상세 화면이 slash 보이싱 재빌드에 사용 (PR-B)
 }
