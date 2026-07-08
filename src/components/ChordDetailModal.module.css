@@ -53,7 +53,7 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 .tone {
   font-family: var(--f-mono);
@@ -64,6 +64,20 @@
   border: 1px solid var(--c-border);
   border-radius: var(--r-pill);
   padding: 4px 11px;
+}
+/* 일부 폼에서 생략되는 공식 음: 흐림 + 점선 테두리로 구분 */
+.toneOmitted {
+  color: var(--c-faint);
+  background: transparent;
+  border-style: dashed;
+  opacity: 0.7;
+}
+.tonesCaption {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  color: var(--c-faint);
+  margin-bottom: 20px;
 }
 .grid {
   display: grid;

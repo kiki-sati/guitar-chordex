@@ -40,6 +40,9 @@ export const ko = {
   allVoicings: (n: number) => '🎸 ALL VOICINGS · ' + n + '폼',
   modalEmpty: '이 코드의 표준 폼을 찾지 못했어요.',
   formOpen: 'OPEN',
+  // tone-chip omission (일부 폼이 5도 등 비필수음을 생략할 때만 노출)
+  tonesOmittedCaption: '일부 폼은 5도 등 비필수음을 생략합니다',
+  toneOmittedTitle: '일부 폼에서 생략',
   // collect toasts
   alreadyCollected: (name: string) => name + ' 은 이미 담겨있어요',
   collected: (name: string) => name + ' 담음 · 악보에서 편성하세요',
