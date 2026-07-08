@@ -189,6 +189,7 @@ export function reducer(state: AppState, action: Action): AppState {
           root: action.chord.root,
           qualKey: action.chord.qualKey,
           name: action.chord.name,
+          bass: action.chord.bass, // ★슬래시 베이스 전달(있으면). 일반 코드는 undefined.
         },
         // 재진입 가드: 이미 상세 화면이면 원래 진입 뷰 유지(chordDetail로 덮이지 않음)
         detailReturnView:

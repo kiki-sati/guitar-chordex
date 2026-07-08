@@ -1,5 +1,6 @@
 import { ChordDiagram } from './ChordDiagram';
 import { voicingsByPosition } from '../domain/voicing';
+import { allSlashVoicings } from '../domain/slash';
 import { computeDiagram } from '../domain/diagram';
 import { omittedInVoicing } from '../domain/voicing-pcs';
 import { noteName } from '../domain/notes';
@@ -11,7 +12,31 @@ import type {
   CollectedChord,
   FretArray,
   VoicingForm,
+  VoicingPosition,
 } from '../domain/types';
+
+/**
+ * 슬래시 보이싱(FretArray[])을 포지션(computeDiagram(fr).start 기준)으로 그룹핑해
+ * 기존 VoicingPosition[] shape로 변환한다(순수·로컬). 각 폼 source='enum'(쉐입 배지 없음).
+ * 반환 순서: pos(start) 오름차순 → 입력 순서 유지(allSlashVoicings가 이미 결정론적).
+ */
+function groupSlashPositions(forms: FretArray[]): VoicingPosition[] {
+  const groups = new Map<number, VoicingForm[]>();
+  const order: number[] = [];
+  for (const fr of forms) {
+    const pos = computeDiagram(fr).start;
+    let g = groups.get(pos);
+    if (!g) {
+      g = [];
+      groups.set(pos, g);
+      order.push(pos);
+    }
+    g.push({ frets: fr, source: 'enum' });
+  }
+  return order
+    .sort((a, b) => a - b)
+    .map((pos) => ({ pos, forms: groups.get(pos)! }));
+}
 
 interface ChordDetailViewProps {
   detail: ChordDetail;
@@ -30,7 +55,13 @@ export function ChordDetailView({
   onBack,
   onCollect,
 }: ChordDetailViewProps) {
-  const positions = voicingsByPosition(detail.root, detail.qualKey);
+  const isSlash = detail.bass != null;
+  // 슬래시면 베이스 제약 보이싱(FretArray[])을 포지션 그룹으로 변환, 아니면 기존 경로.
+  const positions = isSlash
+    ? groupSlashPositions(
+        allSlashVoicings(detail.root, detail.qualKey, detail.bass as number),
+      )
+    : voicingsByPosition(detail.root, detail.qualKey);
   // 평면 파생: 앱바 담기(대표 폼) · 생략 판정에 사용.
   const allForms = positions.flatMap((p) => p.forms);
   const total = allForms.length;
@@ -39,6 +70,8 @@ export function ChordDetailView({
   const tones = INTERVALS[detail.qualKey].map((i) =>
     noteName((detail.root + i) % 12),
   );
+  // 슬래시 베이스 음이름(칩 1개 추가용). 일반 코드는 null.
+  const bassNote = isSlash ? noteName(detail.bass as number) : null;
 
   // 폼별 생략 공식 음(음이름 라벨). 사용자 혼란은 개별 폼 단위에서 생기므로
   // (예: 오픈 C9 x30330에서 5도 G가 빠짐) 각 폼마다 도메인 헬퍼로 판정한다.
@@ -98,6 +131,14 @@ export function ChordDetailView({
               {t}
             </span>
           ))}
+          {bassNote ? (
+            <span
+              data-testid="bass-chip"
+              className={`${styles.tone} ${styles.bassTone}`}
+            >
+              {ko.slashBassChip(bassNote)}
+            </span>
+          ) : null}
         </div>
         {hasOmission ? (
           <div className={styles.tonesCaption}>{ko.tonesOmittedCaption}</div>

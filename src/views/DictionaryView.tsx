@@ -3,6 +3,7 @@ import { Segmented } from '../components/Segmented';
 import { RootPills } from '../components/RootPills';
 import { ChordCard } from '../components/ChordCard';
 import { buildChord } from '../domain/chord';
+import { buildSlashChord } from '../domain/slash';
 import { diatonic } from '../domain/diatonic';
 import { searchChords } from '../domain/searchChords';
 import { noteName } from '../domain/notes';
@@ -27,9 +28,11 @@ export function DictionaryView() {
   const query = state.query.trim();
   if (query) {
     // 검색 로직은 도메인(searchChords)으로 위임 — 별칭/텐션/괄호/이명동음 흡수.
-    // PR-A에서는 모든 히트가 일반 코드(bass 없음)이므로 buildChord로 렌더.
+    // 슬래시 히트(bass 있음)는 buildSlashChord로 베이스 제약 보이싱을, 그 외는 buildChord.
     const out: Chord[] = searchChords(query).map((hit) =>
-      buildChord(hit.root, hit.qualKey),
+      hit.bass != null
+        ? buildSlashChord(hit.root, hit.qualKey, hit.bass)
+        : buildChord(hit.root, hit.qualKey),
     );
     body = out.length ? (
       <div>

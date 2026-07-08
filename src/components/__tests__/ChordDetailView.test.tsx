@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { ChordDetailView } from '../ChordDetailView';
 import { ko } from '../../i18n/strings';
 import { voicingsByPosition } from '../../domain/voicing';
+import { allSlashVoicings } from '../../domain/slash';
 import { computeDiagram } from '../../domain/diagram';
 import type { ChordDetail } from '../../domain/types';
 
@@ -134,6 +135,51 @@ describe('ChordDetailView — position grouping (voicing forms UI)', () => {
       .getAllByTestId('shape-badge')
       .map((el) => el.textContent);
     expect(badges).toContain(ko.shapeBadge('A'));
+  });
+});
+
+describe('ChordDetailView — slash chords (PR-B)', () => {
+  // G/B: root G(7), maj, bass B(11). 전위. detail.bass 지정.
+  const gOverB: ChordDetail = { root: 7, qualKey: 'maj', name: 'G/B', bass: 11 };
+
+  it('renders slash voicing form cards (count == allSlashVoicings length)', () => {
+    const n = allSlashVoicings(gOverB.root, gOverB.qualKey, gOverB.bass!).length;
+    expect(n).toBeGreaterThan(0); // API 전제 실측
+    renderView(gOverB);
+    expect(screen.getAllByTestId('form-card')).toHaveLength(n);
+    expect(screen.getByText(ko.allVoicings(n))).toBeInTheDocument();
+  });
+
+  it('shows a bass chip labeled with the bass note (B)', () => {
+    renderView(gOverB);
+    const bassChip = screen.getByTestId('bass-chip');
+    expect(bassChip).toHaveTextContent(ko.slashBassChip('B'));
+  });
+
+  it('slash forms carry no shape badge (source enum only)', () => {
+    renderView(gOverB);
+    expect(screen.queryAllByTestId('shape-badge')).toHaveLength(0);
+  });
+
+  it('appbar title is the slash name', () => {
+    renderView(gOverB);
+    expect(screen.getByText('G/B')).toBeInTheDocument();
+  });
+
+  it('slash form positions group by computeDiagram start', () => {
+    const forms = allSlashVoicings(gOverB.root, gOverB.qualKey, gOverB.bass!);
+    const expectedPositions = new Set(
+      forms.map((fr) => computeDiagram(fr).start),
+    );
+    renderView(gOverB);
+    expect(screen.getAllByTestId('position-section')).toHaveLength(
+      expectedPositions.size,
+    );
+  });
+
+  it('non-slash regression: no bass chip when detail.bass is undefined', () => {
+    renderView({ root: 0, qualKey: 'maj', name: 'C' });
+    expect(screen.queryByTestId('bass-chip')).toBeNull();
   });
 });
 

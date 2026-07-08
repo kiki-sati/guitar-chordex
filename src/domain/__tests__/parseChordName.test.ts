@@ -110,14 +110,44 @@ describe('parseChordName — unicode/equivalence tension forms', () => {
   });
 });
 
+describe('parseChordName — slash chords (§2.3 PR-B activation)', () => {
+  it('G/B → root G maj, bass B', () => {
+    expect(parseChordName('G/B')).toEqual({ root: 7, qualKey: 'maj', bass: 11, display: 'G/B' });
+  });
+  it('Gadd2/B → body add9 (add2 alias), bass B', () => {
+    const p = parseChordName('Gadd2/B');
+    expect(p).toEqual({ root: 7, qualKey: 'add9', bass: 11, display: 'Gadd2/B' });
+  });
+  it('Ab/C → root G#(8) maj, bass C(0)', () => {
+    expect(parseChordName('Ab/C')).toEqual({ root: 8, qualKey: 'maj', bass: 0, display: 'Ab/C' });
+  });
+  it('C/D → root C maj, bass D', () => {
+    expect(parseChordName('C/D')).toEqual({ root: 0, qualKey: 'maj', bass: 2, display: 'C/D' });
+  });
+  it('Db/Eb → root Db(1) maj, bass Eb(3)', () => {
+    expect(parseChordName('Db/Eb')).toEqual({ root: 1, qualKey: 'maj', bass: 3, display: 'Db/Eb' });
+  });
+  it('A/B → root A maj, bass B (on-chord)', () => {
+    expect(parseChordName('A/B')).toEqual({ root: 9, qualKey: 'maj', bass: 11, display: 'A/B' });
+  });
+  it('AM7/B → body maj7 preserved (case-sensitive) + bass B', () => {
+    expect(parseChordName('AM7/B')).toEqual({ root: 9, qualKey: 'maj7', bass: 11, display: 'AM7/B' });
+  });
+  it('invalid bass (G/H) → null', () => {
+    expect(parseChordName('G/H')).toBeNull();
+  });
+  it('invalid bass with trailing junk (C/Db7) → null', () => {
+    expect(parseChordName('C/Db7')).toBeNull();
+  });
+  it('invalid body (X/B) → null', () => {
+    expect(parseChordName('X/B')).toBeNull();
+  });
+});
+
 describe('parseChordName — failure cases', () => {
   it('empty string → null', () => {
     expect(parseChordName('')).toBeNull();
     expect(parseChordName('   ')).toBeNull();
-  });
-  it('slash input → null in PR-A (bass handled in PR-B)', () => {
-    expect(parseChordName('G/B')).toBeNull();
-    expect(parseChordName('Gadd2/B')).toBeNull();
   });
   it('unknown quality → null', () => {
     expect(parseChordName('Cwizzle99')).toBeNull();

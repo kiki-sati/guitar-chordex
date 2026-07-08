@@ -6,8 +6,8 @@ import { normalizeChordText } from './normalize';
 export interface ParsedChord {
   root: RootIndex;
   qualKey: Quality;
-  bass?: RootIndex; // PR-B에서 활성 (슬래시). PR-A에서는 슬래시 입력을 null 처리.
-  display: string; // 원본 자연 표기 (표시용) — 예 'AM7', 'Am7'
+  bass?: RootIndex; // ★PR-B 활성: 슬래시 `X/Y`의 베이스. 슬래시 없으면 undefined.
+  display: string; // 원본 자연 표기 (표시용) — 예 'AM7', 'G/B'
 }
 
 // ── 루트 음이름 → RootIndex (샤프 표기 기준, 이명동음 흡수) ──
@@ -87,25 +87,48 @@ function resolveQuality(suf: string): Quality | null {
   return SUFFIX_INDEX[norm] ?? null;
 }
 
+/** 베이스 표기(음이름 + 선택적 변화표)만 → RootIndex. 나머지 문자 있으면 실패(null). */
+function parseBass(str: string): RootIndex | null {
+  const m = /^([A-Ga-g])([#b♯♭]?)$/.exec(str);
+  if (!m) return null;
+  return parseRoot(m[1], m[2]);
+}
+
+/** 코드 본체(루트+quality) → {root, qualKey} | null (케이스 민감). */
+function parseBody(body: string): { root: RootIndex; qualKey: Quality } | null {
+  const m = /^([A-Ga-g])([#b♯♭]?)/.exec(body);
+  if (!m) return null;
+  const root = parseRoot(m[1], m[2]);
+  if (root === null) return null;
+  const suf = body.slice(m[0].length);
+  const qualKey = resolveQuality(suf);
+  if (qualKey === null) return null;
+  return { root, qualKey };
+}
+
 /**
- * 코드명 문자열 → {root, qualKey, display} | null (케이스 민감 파서).
+ * 코드명 문자열 → {root, qualKey, bass?, display} | null (케이스 민감 파서).
  *
- * PR-A: 슬래시(`/`) 포함 입력은 **null 반환**(PR-B에서 베이스 처리). 잘못된 결과보다 미지원이 명확.
+ * 슬래시(`X/Y`): 마지막 `/`로 body/bassStr 분리(`Gadd2/B` → `Gadd2`+`B`).
+ * body는 케이스 민감 규칙(§2.3)으로, bassStr은 루트 규칙으로 파싱. 둘 중 하나라도 실패 → 전체 null.
+ * 슬래시가 없으면 기존 경로 그대로(bass 없음).
  */
 export function parseChordName(input: string): ParsedChord | null {
   const display = input.trim();
   if (display === '') return null;
-  // 슬래시 포함 → PR-A 미지원 (PR-B에서 처리)
-  if (display.includes('/')) return null;
 
-  const m = /^([A-Ga-g])([#b♯♭]?)/.exec(display);
-  if (!m) return null;
-  const root = parseRoot(m[1], m[2]);
-  if (root === null) return null;
+  const slashAt = display.lastIndexOf('/');
+  if (slashAt >= 0) {
+    const bodyStr = display.slice(0, slashAt);
+    const bassStr = display.slice(slashAt + 1);
+    const body = parseBody(bodyStr);
+    if (body === null) return null;
+    const bass = parseBass(bassStr);
+    if (bass === null) return null;
+    return { root: body.root, qualKey: body.qualKey, bass, display };
+  }
 
-  const suf = display.slice(m[0].length);
-  const qualKey = resolveQuality(suf);
-  if (qualKey === null) return null;
-
-  return { root, qualKey, display };
+  const body = parseBody(display);
+  if (body === null) return null;
+  return { root: body.root, qualKey: body.qualKey, display };
 }
