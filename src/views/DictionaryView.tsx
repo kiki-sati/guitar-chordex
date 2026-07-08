@@ -4,8 +4,9 @@ import { RootPills } from '../components/RootPills';
 import { ChordCard } from '../components/ChordCard';
 import { buildChord } from '../domain/chord';
 import { diatonic } from '../domain/diatonic';
-import { noteName, normalizeQuery } from '../domain/notes';
-import { NOTE, QUALS, QGROUPS, SUF } from '../domain/constants';
+import { searchChords } from '../domain/searchChords';
+import { noteName } from '../domain/notes';
+import { NOTE, QGROUPS } from '../domain/constants';
 import { ko } from '../i18n/strings';
 import styles from './DictionaryView.module.css';
 import type { Chord } from '../domain/types';
@@ -25,14 +26,11 @@ export function DictionaryView() {
   let body: React.ReactNode;
   const query = state.query.trim();
   if (query) {
-    const q = normalizeQuery(query);
-    const out: Chord[] = [];
-    for (let r = 0; r < 12; r++) {
-      for (const ql of QUALS) {
-        const nm = normalizeQuery(noteName(r) + (SUF[ql] || ''));
-        if (nm.includes(q)) out.push(buildChord(r, ql));
-      }
-    }
+    // 검색 로직은 도메인(searchChords)으로 위임 — 별칭/텐션/괄호/이명동음 흡수.
+    // PR-A에서는 모든 히트가 일반 코드(bass 없음)이므로 buildChord로 렌더.
+    const out: Chord[] = searchChords(query).map((hit) =>
+      buildChord(hit.root, hit.qualKey),
+    );
     body = out.length ? (
       <div>
         <div className={styles.resultMeta}>{ko.searchResult(out.length)}</div>
