@@ -36,10 +36,11 @@ export const ko = {
   actCopy: '복사',
   actAllForms: '모든 폼',
   comingSoon: '준비 중',
-  // modal
+  // detail screen (구 modal)
   allVoicings: (n: number) => '🎸 ALL VOICINGS · ' + n + '폼',
   modalEmpty: '이 코드의 표준 폼을 찾지 못했어요.',
   formOpen: 'OPEN',
+  detailBack: '뒤로가기',
   // 폼별 생략 (해당 폼이 공식 음을 생략할 때 카드에 배지 + 상단 캡션)
   tonesOmittedCaption: '일부 폼은 5도 등 비필수음을 생략합니다',
   omitBadge: (notes: string) => notes + ' 생략',

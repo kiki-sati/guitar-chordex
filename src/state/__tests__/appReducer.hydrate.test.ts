@@ -38,6 +38,7 @@ describe('HYDRATE (PR⑤ §4.2)', () => {
       selectedRoot: 7,
       homeLayout: 'board',
       detailChord: { root: 0, qualKey: 'maj', name: 'C' },
+      detailReturnView: 'scales',
     });
     const s = reducer(before, { type: 'HYDRATE', persisted: HYDRATED });
     expect(s.view).toBe('practice');
@@ -50,6 +51,7 @@ describe('HYDRATE (PR⑤ §4.2)', () => {
     expect(s.selectedRoot).toBe(7);
     expect(s.homeLayout).toBe('board');
     expect(s.detailChord).toEqual({ root: 0, qualKey: 'maj', name: 'C' });
+    expect(s.detailReturnView).toBe('scales');
   });
 
   it('is pure/deterministic — same input yields equal output', () => {

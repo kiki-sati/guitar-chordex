@@ -5,21 +5,24 @@ import { omittedInVoicing } from '../domain/voicing-pcs';
 import { noteName } from '../domain/notes';
 import { INTERVALS } from '../domain/constants';
 import { ko } from '../i18n/strings';
-import styles from './ChordDetailModal.module.css';
+import styles from './ChordDetailView.module.css';
 import type { ChordDetail, CollectedChord, FretArray } from '../domain/types';
 
-interface ChordDetailModalProps {
+interface ChordDetailViewProps {
   detail: ChordDetail;
-  onClose: () => void;
+  onBack: () => void;
   onCollect: (c: CollectedChord) => void;
 }
 
-/** 모든 폼 상세 모달 (원본 detailView 라인 361-382). */
-export function ChordDetailModal({
+/**
+ * 모든 폼 상세 화면 (구 ChordDetailModal 본문 이관 — 팝업 → 전용 화면).
+ * 도메인 계산(allVoicings/computeDiagram/INTERVALS)만 호출, 음악 로직 직접 구현 없음.
+ */
+export function ChordDetailView({
   detail,
-  onClose,
+  onBack,
   onCollect,
-}: ChordDetailModalProps) {
+}: ChordDetailViewProps) {
   const voicings = allVoicings(detail.root, detail.qualKey);
   // 톤 칩은 코드 공식 그대로(정확). 생략 여부는 폼별로 카드에 표시한다.
   const tones = INTERVALS[detail.qualKey].map((i) =>
@@ -45,34 +48,36 @@ export function ChordDetailModal({
   const hasOmission = voicings.some((fr) => omittedLabels(fr).length > 0);
 
   return (
-    <div
-      className={styles.scrim}
-      role="presentation"
-      onClick={onClose}
-    >
-      <div
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-label={detail.name}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={styles.header}>
-          <div>
-            <div className={styles.eyebrow}>
-              {ko.allVoicings(voicings.length)}
-            </div>
-            <div className={styles.title}>{detail.name}</div>
-          </div>
-          <button
-            type="button"
-            className={styles.close}
-            aria-label="close"
-            onClick={onClose}
-          >
-            ×
-          </button>
-        </div>
+    <div className={styles.screen}>
+      <div className={styles.appbar}>
+        <button
+          type="button"
+          className={styles.appbarBtn}
+          aria-label={ko.detailBack}
+          onClick={onBack}
+        >
+          ←
+        </button>
+        <span className={styles.appbarTitle}>{detail.name}</span>
+        <button
+          type="button"
+          className={styles.appbarBtn}
+          title={ko.actCollect}
+          aria-label={ko.actCollect}
+          onClick={() =>
+            onCollect({
+              name: detail.name,
+              frets: voicings[0] ?? (['x', 'x', 'x', 'x', 'x', 'x'] as FretArray),
+              key: detail.name,
+            })
+          }
+        >
+          ♥
+        </button>
+      </div>
+
+      <div className={styles.content}>
+        <div className={styles.eyebrow}>{ko.allVoicings(voicings.length)}</div>
 
         <div className={styles.tones}>
           {tones.map((t, i) => (
@@ -101,7 +106,7 @@ export function ChordDetailModal({
                 key: detail.name + '-' + i,
               };
               return (
-                <div key={i} className={styles.formCard}>
+                <div key={i} className={styles.formCard} data-testid="form-card">
                   <div className={styles.formLabel}>{i + 1 + ' · ' + pos}</div>
                   <ChordDiagram frets={fr} width={112} variant="tones" />
                   {omitted.length ? (

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { reducer, initState } from '../appReducer';
 import { dateStr } from '../../domain/notes';
 import type { AppState } from '../appReducer';
+import type { Chord } from '../../domain/types';
 
 function baseState(overrides: Partial<AppState> = {}): AppState {
   const s = initState({
@@ -149,22 +150,69 @@ describe('drills', () => {
   });
 });
 
-describe('detail modal & toast', () => {
-  it('OPEN_DETAIL / CLOSE_DETAIL', () => {
-    let s = reducer(baseState(), {
+describe('detail screen & toast', () => {
+  const cChord: Chord = {
+    name: 'C',
+    frets: ['x', 3, 2, 0, 1, 0],
+    root: 0,
+    qualKey: 'maj',
+    key: 'C',
+  };
+
+  it('OPEN_DETAIL sets detailChord, switches to chordDetail view, records return view', () => {
+    const s = reducer(baseState({ view: 'dictionary' }), {
       type: 'OPEN_DETAIL',
-      chord: {
-        name: 'C',
-        frets: ['x', 3, 2, 0, 1, 0],
-        root: 0,
-        qualKey: 'maj',
-        key: 'C',
-      },
+      chord: cChord,
     });
     expect(s.detailChord).toEqual({ root: 0, qualKey: 'maj', name: 'C' });
+    expect(s.view).toBe('chordDetail');
+    expect(s.detailReturnView).toBe('dictionary');
+  });
+
+  it('OPEN_DETAIL from home records home as return view', () => {
+    const s = reducer(baseState({ view: 'home' }), {
+      type: 'OPEN_DETAIL',
+      chord: cChord,
+    });
+    expect(s.detailReturnView).toBe('home');
+  });
+
+  it('OPEN_DETAIL while already on chordDetail keeps the original return view (re-entry guard)', () => {
+    let s = reducer(baseState({ view: 'dictionary' }), {
+      type: 'OPEN_DETAIL',
+      chord: cChord,
+    });
+    // second open (e.g. from within the detail screen) must not overwrite return view
+    s = reducer(s, {
+      type: 'OPEN_DETAIL',
+      chord: { ...cChord, name: 'Cmaj7', qualKey: 'maj7' },
+    });
+    expect(s.detailReturnView).toBe('dictionary');
+    expect(s.detailChord).toEqual({ root: 0, qualKey: 'maj7', name: 'Cmaj7' });
+  });
+
+  it('CLOSE_DETAIL clears detail and returns to the recorded view', () => {
+    let s = reducer(baseState({ view: 'dictionary' }), {
+      type: 'OPEN_DETAIL',
+      chord: cChord,
+    });
     s = reducer(s, { type: 'CLOSE_DETAIL' });
     expect(s.detailChord).toBeNull();
+    expect(s.view).toBe('dictionary');
   });
+
+  it('CLOSE_DETAIL is idempotent when not on the detail screen', () => {
+    const s = reducer(baseState({ view: 'practice' }), {
+      type: 'CLOSE_DETAIL',
+    });
+    expect(s.view).toBe('practice');
+    expect(s.detailChord).toBeNull();
+  });
+
+  it('initState defaults detailReturnView to dictionary', () => {
+    expect(baseState().detailReturnView).toBe('dictionary');
+  });
+
   it('CLEAR_TOAST clears the toast', () => {
     let s = reducer(baseState(), { type: 'SHOW_TOAST', msg: 'hi' });
     expect(s.toast).toBe('hi');

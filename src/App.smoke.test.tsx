@@ -50,16 +50,21 @@ describe('App shell', () => {
     expect(after).toBe(seeded + 1);
   });
 
-  it('opens and closes the chord detail modal', async () => {
+  it('opens the chord detail screen and returns to the dictionary via the back button', async () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole('button', { name: /코드 사전/ }));
-    // open detail via "모든 폼" of the first card
+    // open detail (screen transition, no overlay scrim) via "모든 폼" of the first card
     const allForms = screen.getAllByLabelText('모든 폼');
     await user.click(allForms[0]);
     expect(screen.getByText(/ALL VOICINGS/)).toBeInTheDocument();
-    // close via the × button
-    await user.click(screen.getByRole('button', { name: 'close' }));
+    // dictionary toolbar is replaced (not overlaid): search box gone
+    expect(screen.queryByPlaceholderText(/코드 검색/)).toBeNull();
+    // it is a full screen, not a modal
+    expect(screen.queryByRole('dialog')).toBeNull();
+    // back via the appbar ← (aria-label 뒤로가기) -> returns to dictionary
+    await user.click(screen.getByRole('button', { name: '뒤로가기' }));
     expect(screen.queryByText(/ALL VOICINGS/)).toBeNull();
+    expect(screen.getByPlaceholderText(/코드 검색/)).toBeInTheDocument();
   });
 });
