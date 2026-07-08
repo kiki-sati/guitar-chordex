@@ -92,3 +92,37 @@
 i18n: `src/i18n/strings.ts`
 컴포넌트(+.module.css): `src/components/{Segmented,RootPills,ChordDiagram,ChordCard,ChordDetailModal,Fretboard,GrassHeatmap,StatCard,DrillList,JournalForm,JournalCard,Sidebar,Header,Toast}.tsx` + `src/components/__tests__/ChordDiagram.test.tsx`
 뷰(+.module.css): `src/views/{HomeView,DictionaryView,ScalesView,PracticeView}.tsx` + `src/views/__tests__/{HomeView,DictionaryView,ScalesView,PracticeView}.test.tsx`
+
+---
+
+# 구현 로그 추가: PR-A 코드 표기 별칭 + 검색 강화
+
+> 작성: implementer · 2026-07-08 · 입력: `26_slash_tension_plan.md`(PR-A 범위) · 브랜치: `feat/chord-name-search`(origin/main 기준)
+> 방법: react-tdd-implementation(Red→Green→Refactor). **도메인 quality 무변경** — 매핑 계층만 신설. `Chord`/voicing/INTERVALS/SUF 무변경.
+
+## 범위 (계획서 PR-A만)
+- 별칭 테이블 + 케이스 민감 파서 + 검색 도메인화 + DictionaryView 얇은 배선.
+- PR-B(슬래시)/PR-C(신규 quality)는 **미포함**. 슬래시 입력은 파서/검색 모두 미지원 처리(파서 null, 검색 빈 결과).
+
+## 신규/변경 파일
+- `src/domain/aliases.ts` (신규): `QUALITY_ALIASES` — `M7/Δ/ma7/major7→maj7`, `add2↔add9`, `7(9)→9`, `7(b9)→7b9`, `7(#9)→7#9`, `7(11)→11`, `7(13)→13`, `m7(9)→m9`, `m7(11)→m11`, `m7(b5)→m7b5`, `maj7(9)→maj9`, `maj7(11)→maj11`, `maj7(#11)→maj#11`, `maj/major→maj`, `min/minor→min`. **소문자 `m7`은 절대 미포함**(케이스 함정).
+- `src/domain/normalize.ts` (신규): `normalizeChordText` — `Δ→maj7`·`♭↔b`·`♯↔#`·toLowerCase. `notes.ts`의 `normalizeQuery`는 **무변경**.
+- `src/domain/parseChordName.ts` (신규): 케이스 민감 파서. `ParsedChord{root,qualKey,bass?,display}|null`. 대문자 M(뒤 `aj` 아님)=maj7류(단독 M=maj triad), 소문자 m(뒤 `aj` 아님)=minor류(단독 m=min triad). 슬래시(`/`) 입력=null(PR-B).
+- `src/domain/searchChords.ts` (신규): `searchChords(query):ChordSearchHit[]`. 12루트×58질×(이명동음 루트 표기 Db/Eb/Gb/Ab/Bb + 별칭 접미사) 전개 인덱스 부분일치. 레거시 알고리즘의 **상위집합**(회귀 0 — 골든으로 증명). 슬래시 쿼리=빈 결과.
+- `src/domain/index.ts` (변경): normalize/aliases/parseChordName/searchChords barrel export 추가.
+- `src/views/DictionaryView.tsx` (변경, 얇게): 인라인 이중 루프 → `searchChords(query).map(buildChord)`. UI 구조·카드 렌더 무변경. `normalizeQuery/QUALS/SUF` import 정리.
+
+## 테스트 (신규 골든)
+- `src/domain/__tests__/aliases.test.ts` (20): 별칭 골든 + 모든 타깃이 실제 quality(INTERVALS 존재) + `m7`↛maj7 케이스 가드.
+- `src/domain/__tests__/parseChordName.test.ts` (49): 루트 17종(샤프/플랫/유니코드/소문자), 케이스 민감 표(AM7/Am7/am7/AMaj7/Amaj7/AM/Am), 인벤토리 비슬래시 15종, Δ/유니코드 플랫, 실패(빈/슬래시/미지 quality/H·X).
+- `src/domain/__tests__/searchChords.test.ts` (33): 레거시 회귀(빈 쿼리·C·Bb 이명동음), 인벤토리 15종 히트, 케이스 함정(AM7·Am7 둘 다 히트), Δ/유니코드, 레거시 상위집합 9쿼리, 슬래시 빈 결과.
+
+## 골든 커버리지 (인벤토리 비슬래시 §1.1)
+- 파서·검색 각각 **15/15 히트**: AM7·CM7·GM7·Aadd2·Cadd2·Dbadd2·Gadd2·Am6·D7(9)·Eb7(9)·C#7(b9)·F#m7(11)·E7sus4·Bbm7·G#m7.
+- 역케이스 단언: `Am7`→m7, `AM7`→maj7 (파서 정확매칭). 검색은 관대(둘 다 히트) — 계획 §5.1 준수.
+
+## 확정 기본값 반영
+- add2 = 별칭 흡수(카드 canonical `Cadd9`, 검색만 add2). 단독 대문자 M = major triad. 이명동음 검색 양쪽 수용, 표시는 canonical.
+
+## 검증 결과
+- `npx tsc -b`: **0** (strict). `npm test`(vitest run): **455 passed / 48 files, 0 fail**(신규 102 포함). `npm run build`: (하단 최종 라인 참조).
