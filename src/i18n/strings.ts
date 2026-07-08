@@ -117,8 +117,8 @@ export const ko = {
   builderRemoveMeasure: '마디 삭제',
   builderChordsSuffix: (n: number) => n + ' CHORDS',
   builderChordCount: (n: number) => n + '코드',
-  builderArmedHint: (name: string) =>
-    name + ' 선택됨 — 악보의 빈 박을 클릭해 넣으세요. 다시 누르면 선택 해제.',
+  builderArmedHintSuffix:
+    ' 선택됨 — 악보의 빈 박을 클릭해 넣으세요. 다시 누르면 선택 해제.',
   builderIdleHint: '담은 코드를 하나 고른 뒤, 악보의 원하는 박을 클릭해 넣으세요.',
   builderSelectFirst: '아래 담은 코드를 먼저 선택하세요',
   builderCellReplace: '클릭해서 교체',

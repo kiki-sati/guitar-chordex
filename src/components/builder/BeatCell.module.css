@@ -1,0 +1,33 @@
+/* 원본 beatCell 라인 633: 좌측 경계(마디 첫 박 2px ink / 그 외 1px line) */
+.cell {
+  position: relative;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-left: 1px solid var(--c-line);
+}
+.barStart {
+  border-left: 2px solid var(--c-ink);
+}
+.cell:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -2px;
+}
+/* 채워진 박: 코드명 굵게 18px (원본 라인 634) */
+.name {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--c-ink);
+  letter-spacing: -0.01em;
+}
+/* 빈 박 기호 (원본 라인 635): armed '+' ink / idle '·' #d3d2cd */
+.plus {
+  font-size: 13px;
+  color: var(--c-ink);
+}
+.dot {
+  font-size: 13px;
+  color: #d3d2cd;
+}

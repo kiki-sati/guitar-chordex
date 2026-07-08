@@ -1,0 +1,40 @@
+/* 원본 라인 656: 4열 컨테이너, columnGap 0, rowGap 22, 우측 2px ink 경계 */
+.container {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 0;
+  row-gap: 22px;
+  border-right: 2px solid var(--c-ink);
+}
+.measure {
+  display: flex;
+  flex-direction: column;
+}
+/* 원본 라인 638: 마디 박 격자, 하단 2px ink 경계 */
+.beats {
+  display: grid;
+  border-bottom: 2px solid var(--c-ink);
+}
+/* 원본 라인 640: 마디 번호 + 삭제 버튼 행 */
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 2px 0;
+  min-height: 18px;
+}
+.measureNum {
+  font-size: 10px;
+  color: var(--c-faint);
+  font-family: var(--f-mono);
+  letter-spacing: 0.4px;
+}
+.removeBtn {
+  border: none;
+  background: none;
+  color: var(--c-faint);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0;
+  line-height: 1;
+}
