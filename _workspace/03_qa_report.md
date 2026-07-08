@@ -96,3 +96,60 @@ implementer 자가 검증 수치(108 tests / 80 modules / BUILD_EXIT=0)와 **완
 ## implementer 전달 사항
 
 차단 이슈 없음 — 재작업 불필요. 관찰 1·3은 원본 의도 보존이므로 조치 불요. 관찰 2(`cs_lang` JSON 포맷)는 EN 토글 후속 작업 착수 시점에 정렬 권고(현 MVP 영향 없음).
+
+---
+---
+
+# QA 리포트 (재검증) — `fix/syncrepo-dispose-guard` (SyncRepo.dispose in-flight 쓰기 취소)
+
+> 검증: qa-verifier · 2026-07-08 · 방법: integration-qa 스킬(경계면 양쪽 동시 읽기 + 명령 독립 재실행 + 소스 무수정 mental-mutation)
+> 대상: 2026-07-03 QA BLOCKING 결함(부활 레이스) 수정. 브랜치 `fix/syncrepo-dispose-guard`, 미커밋 워킹트리(`src/sync/syncEngine.ts`, `src/state/sync-repository.ts`, `src/state/__tests__/sync-repository.test.ts`, `_workspace/02_implementer_log.md`).
+> 환경: Windows 11 / node · npm · vitest 2.1.9. node_modules 존재.
+> 원 결함: `SyncRepo.dispose()`가 in-flight 비동기 쓰기(initialSync/flushQueue)를 취소하지 않아, 로그아웃 시 `clearUserCache(uid)`가 물리 삭제한 `u:{uid}:cs_*`·`u:{uid}:cs_queue` 키를 늦게 resolve된 promise가 재기록(부활). AC⑤-9(공유기기 프라이버시) 위반.
+
+## 종합 판정: **PASS** — 차단 이슈 0건
+
+수정이 로그아웃 이후 도달 가능한 **모든 localStorage 쓰기 경로**를 가드로 닫았고, 세 engine 콜사이트 전부 `isCancelled`를 전달한다. `userCacheKeys` 커버 집합이 실제 쓰기 키 집합과 완전 일치. 신규 테스트 4건은 각 가드에 대해 강한(mental-mutation 시 실패) 테스트다. 3종 검증 명령 모두 독립 재실행 통과. 하위호환(옵셔널 `isCancelled`) 유지 → 기존 콜사이트/테스트 회귀 0. 비차단 관찰 1건(이론적 마이크로 윈도)만 기록.
+
+## 명령 독립 재실행 결과 (실제 출력)
+
+| 명령 | 결과 | 근거 |
+|------|------|------|
+| `npx tsc -b` | **통과 (EXIT=0)** | 출력 없음 + exit 0 |
+| `npx vitest run` (전체) | **357 passed (45 files), 실패 0** | "Test Files 45 passed / Tests 357 passed" |
+| `npx vitest run`(sync-repository + syncEngine 타깃) | **24 passed** (신규 4건 포함) | "13 tests" + "11 tests" |
+| `npm run build` (tsc -b + vite build) | **통과 (EXIT=0)** | "183 modules transformed", "built in 23.24s" |
+
+## 통과 — 경계면 교차 비교 (생산자↔소비자 양쪽 동시 읽기)
+
+- **SyncRepo → syncEngine 3콜사이트 전수(누락 0)**: `sync-repository.ts:58`(initialSync), `:65`(start 즉시 flushQueue, online 가드 내), `:75`(onOnline 리스너 내 flushQueue) — 세 곳 모두 `isCancelled: () => this.disposed` 전달. 누락 경로 없음.
+- **syncEngine 내부 localStorage 도달 쓰기 전수 가드**: `initialSync`의 `local.saveAll` 직전 가드(`syncEngine.ts:70`), `flushQueue`의 루프 각 반복 시작 가드(`:85`)+`queue.remove` 직전 가드(`:94`). `pushChange`는 remote 전용(localStorage 무관) → 미가드가 정상.
+- **SyncRepo 자체 쓰기 경로**: `apply()`의 `local.saveAll`(`sync-repository.ts:91`)은 **첫 await 이전 동기 실행** → 진입 가드(`:86`)로 완전 커버(dispose 후 호출 시 즉시 return, in-flight 시엔 saveAll이 dispose보다 앞서 동기 완료). `enqueue()`는 자체 진입 가드(`:121`)로 in-flight apply의 실패 폴백 재큐 차단.
+- **onMerged 통지 가드**: `.then((merged) => { if (!this.disposed) onMerged(merged); })`(`:59-61`) — dispose 후 React `dispatch(HYDRATE)` 통지 차단(언마운트 후 상태 갱신 방지).
+- **키 집합 일치(`user-keys.ts`)**: `userCacheKeys(uid)` = `{prefix+KEYS.grass|journal|collected|drills|lang}` ∪ `{queueKey(uid)}` = 6키. `LocalRepository.saveAll`이 쓰는 키(`key(KEYS.*)` 5키) + `queue.write`가 쓰는 키(`queueKey` 1키)와 **완전 일치** → 부활 대상 키 누락 없음.
+- **로그아웃 흐름 전체 추적**: `AuthProvider.signOut()`(`AuthProvider.tsx:139-147`)이 `await signOut()` → `clearUserCache(prevUid)`. `onAuthStateChange(null)` → `RepoBoundary`의 `authed=false` → `AppProvider key` 전환 → 언마운트 → `AppContext.tsx:73`의 `repo.dispose()`. **dispose가 clear보다 빠르든 늦든**: (A) dispose 선행 시 이후 clear가 삭제, in-flight는 `disposed` 확인 후 skip → 안전. (B) clear 선행(실사용 순서: clear는 동기, dispose는 스케줄러 다음 틱) 시 in-flight 네트워크 promise는 dispose 이후에 resolve(네트워크 지연 ≫ 틱) → `disposed` true → skip → 안전.
+- **MigrationController(공유 repo)**: 유일 로컬 쓰기 경로가 `repo.apply()`(`MigrationController.tsx:74`) → 진입 가드로 커버. 별도 부활 벡터 없음(범위 밖이나 확인).
+
+## 통과 — 회귀 / 하위호환
+
+- `SyncEngineDeps.isCancelled?`는 **옵셔널**(`syncEngine.ts:24`). 미전달 콜사이트에서 `deps.isCancelled?.()` → `undefined`(falsy) → 가드 미작동 = 기존 동작 불변. `syncEngine.test.ts`(11건)가 `isCancelled` 없이 호출 → 전부 통과로 하위호환 확인.
+- syncEngine의 프로덕션 소비자는 `sync-repository.ts` 단독(grep 확인). 다른 소비자 없음.
+- 기존 테스트 `dispose removes the online listener`(`sync-repository.test.ts:133`)는 apply 진입 가드 추가 후에도 통과 — 단언(`saveGrass` 미호출)이 apply no-op와 무모순.
+
+## 통과 — 신규 테스트 품질 (mental-mutation, 소스 무수정)
+
+deferred promise로 resolve/reject 시점을 dispose 이후로 제어 → 실제 부활 레이스 재현. 각 테스트는 대응 가드 제거 시 실패한다:
+- **late initialSync**(`:182`): 가드(`syncEngine.ts:70`) 제거 시 `saveAll(merged)`가 `u:user-1:cs_grass` 등 재기록 → `expectUserCacheCleared` 실패. onMerged 가드 제거 시 `not.toHaveBeenCalled` 실패. **강함.**
+- **late flushQueue**(`:200`): `queue.remove` 직전 가드(`:94`) 제거 시 `remove(['id'])` → `write([])` → 큐 키 `'[]'`(비-null) → `toBeNull` 실패. **강함.**
+- **in-flight apply push fail**(`:222`): `enqueue` 진입 가드(`sync-repository.ts:121`) 제거 시 큐 키 기록 → 실패. saveAll은 dispose 전 동기 완료 후 clear가 삭제하므로 큐 키만 단언 — 정확한 대상. **강함.**
+- **apply after dispose**(`:238`): apply 진입 가드(`:86`) 제거 시 saveAll 기록 + `saveGrass` 호출 → 두 단언 모두 실패. **강함.**
+- `settle()`(2×`setTimeout(0)`)는 macrotask 경계로 다중 await 마이크로태스크 체인을 완전 flush → 타이밍 충분.
+
+## 관찰 / 권고 (비차단)
+
+1. **clear↔dispose 순서의 이론적 마이크로 윈도** — 아키텍처 특성(이번 수정 도입 아님, 사전 존재).
+   실사용 순서는 `clearUserCache`(동기) → `dispose`(React 스케줄러 다음 틱). 그 사이 단일 틱 폭에서 in-flight 네트워크 promise가 정확히 resolve되면(그리고 그 continuation의 saveAll이 dispose 이전에 실행되면) 이론상 부활 가능. 그러나 (a) 네트워크 지연(수십~수백 ms) ≫ 스케줄러 틱, (b) promise가 clear 이전 resolve되면 clear가 삭제(안전)·dispose 이후면 가드 차단(안전) → 위험 창은 틱 폭 대 네트워크 지연으로 사실상 비도달. 이번 `isCancelled` 가드는 **재현 가능한 지배적 레이스(느린 네트워크가 로그아웃 한참 뒤 resolve)를 정확히 차단**한다. 완전 봉쇄는 dispose(또는 disposed 세팅)를 clear보다 앞세우는 재배치가 필요하나 이는 확정 설계 범위 밖. **차단 아님 — 정보용 기록.**
+
+## implementer 전달 사항
+
+차단 이슈 없음 — 재작업 불필요. 세 engine 콜사이트·SyncRepo 자체 쓰기·onMerged 통지 전 경로가 가드로 닫혔고 키 커버리지·하위호환·테스트 강도 모두 충족. 관찰 1은 사전 존재하는 아키텍처 특성으로 확정 설계 범위 밖(정보용).
