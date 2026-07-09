@@ -146,9 +146,11 @@ export function ChordDetailView({
 
         {positions.length ? (
           positions.map((p) => {
-            // 포지션 헤더 라벨: 그 포지션 첫 폼의 다이어그램 기준(OPEN / Nfr).
-            const headG = computeDiagram(p.forms[0].frets);
-            const posLabel = headG.showNut ? ko.formOpen : headG.start + 'fr';
+            // 포지션 헤더 라벨: 그룹 키(pos = 최저 프렛)를 그대로 쓴다.
+            // computeDiagram.showNut은 "최고프렛<=5면 항상 true"라(다이어그램 렌더용)
+            // 서로 다른 저포지션(1·2·3fr)을 전부 'OPEN'으로 뭉갠다 → 헤더용 부적합.
+            // pos는 그룹 유일값이므로 헤더가 항상 구분된다(예: x35453 A폼 바레 = 3fr).
+            const posLabel = p.pos <= 0 ? ko.formOpen : p.pos + 'fr';
             return (
               <section
                 key={p.pos}
