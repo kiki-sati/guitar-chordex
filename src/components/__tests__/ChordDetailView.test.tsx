@@ -18,12 +18,12 @@ function totalForms(detail: ChordDetail): number {
   );
 }
 
-// 포지션 헤더 라벨은 그 포지션 첫 폼의 다이어그램 기준으로 도출(컴포넌트와 동일 규칙).
+// 포지션 헤더 라벨은 그룹 키(pos = 최저 프렛)로 도출(컴포넌트와 동일 규칙).
+// computeDiagram.showNut을 쓰면 저포지션이 전부 'OPEN'으로 뭉개지므로 pos를 쓴다.
 function headerLabels(detail: ChordDetail): string[] {
-  return voicingsByPosition(detail.root, detail.qualKey).map((p) => {
-    const g = computeDiagram(p.forms[0].frets);
-    return g.showNut ? ko.formOpen : g.start + 'fr';
-  });
+  return voicingsByPosition(detail.root, detail.qualKey).map((p) =>
+    p.pos <= 0 ? ko.formOpen : p.pos + 'fr',
+  );
 }
 
 function renderView(
@@ -95,7 +95,7 @@ describe('ChordDetailView — position grouping (voicing forms UI)', () => {
     );
   });
 
-  it('position headers match the labels derived from voicingsByPosition + computeDiagram', () => {
+  it('position headers use the pos fret (unique per section, not collapsed to OPEN)', () => {
     const detail: ChordDetail = { root: 0, qualKey: 'maj7', name: 'Cmaj7' };
     const expected = headerLabels(detail);
     renderView(detail);
@@ -103,6 +103,11 @@ describe('ChordDetailView — position grouping (voicing forms UI)', () => {
       .getAllByTestId('position-header')
       .map((el) => el.textContent);
     expect(rendered).toEqual(expected);
+    // 회귀 가드: 헤더는 포지션마다 유일해야 한다(예전 버그: showNut이 저포지션을
+    // 전부 'OPEN'으로 뭉개 3개가 중복됨). pos 기반이면 모두 구분된다.
+    expect(new Set(rendered).size).toBe(rendered.length);
+    // A쉐입 바레(x-3-5-4-5-3)는 pos=3 → '3fr' 헤더로 나타나야 한다(사용자 지목 폼).
+    expect(rendered).toContain('3fr');
   });
 
   it('Cmaj7: shows the E-shape full-barre position (8fr) header among multiple positions', () => {
